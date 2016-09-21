@@ -111,8 +111,8 @@ AK_CHECK_BUILD_DEPENDENCIES([yes], [$MODULE_ROOT_VALUES])
 AC_CONFIG_FILES([
 	Makefile
 	src/Similarity/editDist/Makefile
-	src/feaSel/Makefile
-	src/textmodel/Makefile
+	src/classify/feaSel/Makefile
+	src/classify/textModel/Makefile
 	src/jsoncpp/Makefile
 	src/common_base/Makefile
 	src/segment/Makefile
