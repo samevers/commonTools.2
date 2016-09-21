@@ -1,0 +1,24 @@
+include $(top_srcdir)/common.mk
+
+bin_PROGRAMS=
+lib_LIBRARIES=
+lib_LTLIBRARIES=
+SUBDIRS=
+AM_CPPFLAGS=
+
+lib_LTLIBRARIES+=libisPorn.la
+libisPorn_la_SOURCES=isPorn.cpp 
+libisPorn_la_LIBADD=-lm -lpthread -lencoding
+libisPorn_la_LDFLAGS=-no-install -DHAVE_CXX_STDHEADERS -DLINUX -DACE_HAS_EVENT_POLL -fPIC -ggdb
+AM_CPPFLAGS+= -I../../include/gary_common -I../../include
+libisPorn_la_CPPFLAGS=$(AM_CPPFLAGS)
+
+bin_PROGRAMS+=isPorn_test
+isPorn_test_SOURCES=test.cpp 
+isPorn_test_LDADD=-lisPorn -L"/usr/lib/"
+isPorn_test_CPPFLAGS=$(AM_CPPFLAGS)
+
+#bin_PROGRAMS+=isPorn_test_file
+#isPorn_test_file_SOURCES=isPorn_test_file.cpp 
+#isPorn_test_file_LDADD=-lisPorn -lgtest -lgflags -L"/usr/lib/" -lCoreSegmentor
+

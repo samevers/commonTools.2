@@ -1,0 +1,210 @@
+#include "isPorn.h"
+#include "gary_string.h"
+#include "gary_common.h"
+#include <math.h>
+#include <sys/time.h>
+//#include "../../QueryOptimizer/service_log.hpp"
+using namespace std;
+
+//const static string PATH = "../../QueryOptimizer/data/base/analysis/queryclass/porn/";
+const static string PATH = "model_/";
+const static int TERMSIZE = 10;
+
+int textCategorization::loadStop(string filename)
+{
+	ifstream infile;
+	infile.open(filename.c_str(),ios::in);
+	if(!infile)
+	{
+		cerr << "ERROR : fail to open stopword file!" << endl;
+		return -1;
+	}
+	string line;
+	while(getline(infile,line))
+	{
+		spaceGary::StringTrim(line);
+		if(line == "")
+			continue;
+		hash_stop[line]++;
+	}
+	return 0;
+}
+int textCategorization::init()
+{
+	string stopfile = PATH + "stop/stopword.txt";
+	if(loadStop(stopfile) == -1)
+		return -1;
+	if(LoadModels() == -1)
+		return -1;
+	return 0;
+}
+
+int textCategorization::LoadModels()
+{
+	string path;
+	for (int i = 1; i < 21; i++)
+	{
+		path = PATH + "/models/model." + spaceGary::toString(i) + ".gram";
+		if(load_wordDist_model(path) == -1)
+    
+		{
+			cerr << "[ERROR] [isPorn] [LoadModels] Fail to load porn model files." << endl;
+			return -1;
+		}
+		//break;// So far, only load one model file.
+	}
+	return 0;
+}
+/****************************************/
+/*	Load model.
+ *	@SamHu.
+/****************************************/
+int textCategorization::load_wordDist_model(string modelfile)
+{
+	ifstream model_f;
+	if(spaceGary::open_f(modelfile, model_f) == -1)
+		return -1;
+	string line;
+	int loc;
+	vector<string> classWeight;
+	double prob_y;
+	string term;
+	string y;
+	double prob_term_y;
+	pair<string,string> pir_;
+	map<pair<string, string>, double > model;
+	while(getline(model_f, line))
+	{
+		classWeight.clear();
+		spaceGary::StringSplit(line, classWeight, " ");
+		if(classWeight.size() < 2)
+			continue;
+		if(classWeight[0] == "##class##")
+		{
+			prob_y = spaceGary::toDouble(classWeight[2]);
+			hash_y_prob[classWeight[1]] = prob_y;
+			continue;
+		}
+		term = classWeight[0];
+		y = classWeight[1];
+		prob_term_y = spaceGary::toDouble(classWeight[2]);
+		pir_ = make_pair(term, y);
+		model.insert(make_pair(pir_, prob_term_y));
+	}
+	hash_model.push_back(model);
+	// clear cache.
+	model_f.close();
+	classWeight.clear();
+	return 0;
+}
+
+/****************************************/
+/*	Load classifier model,
+/*	and predict new income.
+ *	@SamHu.
+/****************************************/
+double textCategorization::predict_wordDist(string line, vector<string>& termList)
+{
+	if(line.length() < 1)
+		return 0;
+	if(termList.size() < 1)
+		return 0;
+	
+	string y;
+	double p;
+	int fea_num;
+	string bgram;
+	string skBgram;
+	string triGram;
+	double Probs_;
+
+	vector<pair<string, double> > scores;
+	map<string, double>::iterator iter_y;
+	// get through the models.
+	double confidence = 0;
+	map<pair<string, string>, double > model_;
+	int time_ = 0;
+
+	timeval before;
+	timeval after;
+	int cost;
+	for(int k = 0; k < hash_model.size(); k++)
+	{
+		//model_ = hash_model[k];
+		for(iter_y = hash_y_prob.begin(); iter_y != hash_y_prob.end(); iter_y++)
+		{
+			y = iter_y->first;
+			p = iter_y->second;
+
+			Probs_ = 0.0;
+			fea_num = 0;
+			bgram = "";
+			skBgram = "";
+			triGram = "";
+			//int size = (termList.size() < TERMSIZE ? termList.size():TERMSIZE);
+			int size = termList.size();
+			for(int i = 0; i < size; i++)
+			{
+				time_ ++;
+				if(termList[i].length() < 4)// not consider short feature words. 
+					continue;
+				/*
+				// bigram
+				if(termList.size() > 1)
+				{
+					if(i < termList.size() - 1)
+					{
+						bgram = termList[i] + "#_#" + termList[i + 1];
+					}
+				}
+				// skip-tri-gram
+				if(termList.size() > 2)
+				{
+					if(i < termList.size() - 2)
+					{
+						skBgram = termList[i] + "#_#" + termList[i+2];
+						triGram = termList[i] + "#_#" + termList[i+1] + "#_#" + termList[i+2]; 
+					}
+				}
+				*/
+				if(hash_model[k].find(make_pair(termList[i],y)) != hash_model[k].end())
+				{
+					Probs_ += log(hash_model[k][make_pair(termList[i],y)]+0.001);
+					fea_num++;
+				}
+
+				/*
+				if(model_.find(make_pair(bgram,y)) != model_.end())
+				{
+					Probs_ += log(model_[make_pair(bgram,y)]+0.01);
+					fea_num++;
+				}
+	
+				if(model_.find(make_pair(skBgram,y)) != model_.end())
+				{
+					Probs_ += log(model_[make_pair(skBgram,y)]+0.01);
+					fea_num++;
+				}
+				if(model_.find(make_pair(triGram,y)) != model_.end())
+				{
+					Probs_ += log(model_[make_pair(triGram,y)]+0.01);
+					fea_num++;
+				}
+				*/
+
+			}
+			Probs_ *= p;
+			Probs_ /=(double)(size + 1);
+			scores.push_back(make_pair(y.c_str(),Probs_));
+		}
+		if(scores.size() > 1)
+		{
+			confidence += scores[1].second - scores[0].second;
+		}
+		scores.clear();
+	}
+	//cerr << "[INFO] times to loop in Porn = " << time_ << endl;
+	return confidence;
+}
+
+
