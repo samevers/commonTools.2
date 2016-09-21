@@ -1,7 +1,7 @@
 #ifndef __FeaChiECT_HEAD__
 #define __FeaChiECT_HEAD__
 
-#include "../include/gary_common/gary_string.h"
+#include "../../include/gary_common/gary_string.h"
 #include <fstream>
 using namespace std;
 

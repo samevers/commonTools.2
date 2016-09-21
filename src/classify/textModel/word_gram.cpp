@@ -2,14 +2,14 @@
 #include "general.h"
 #include <regex.h>
 #include <boost/regex.hpp>
-#include "../include/gary_common/gary_string.h"
+#include "../../include/gary_common/gary_string.h"
 #include "Platform/bchar.h" 
 #include "Platform/encoding.h" 
 #include "Platform/encoding/support.h"
 #include "Platform/encoding/EncodingConvertor.h"
 #include "Platform/encoding/stringmatch/AhoCorasick.h"
 #include "Platform/gchar.h"
-#include "../word_segmentor/WordSegmentor4/Segmentor/DicTree.h"
+#include "../../word_segmentor/WordSegmentor4/Segmentor/DicTree.h"
 
 /****************************************/
 /* NOTE:

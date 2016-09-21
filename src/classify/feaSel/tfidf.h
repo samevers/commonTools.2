@@ -1,8 +1,8 @@
 #ifndef TF_IDF_HEAD_H__
 #define TF_IDF_HEAD_H__
 
-#include "../include/general.h"
-#include "../include/gary_common/gary_string.h"
+#include "../../include/general.h"
+#include "../../include/gary_common/gary_string.h"
 
 class TF_IDF{
 	private:

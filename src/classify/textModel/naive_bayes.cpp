@@ -1,6 +1,6 @@
 #include "naive_bayes.h"
 #include "general.h"
-#include "../include/gary_common/gary_string.h"
+#include "../../include/gary_common/gary_string.h"
 /****************************************/
 /* NOTE:
 /* TRAIN FORMAT: class term1 term2 term3 .... ¡¾NOTE: term* must be different from each other in the current same line!¡¿

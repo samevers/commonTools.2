@@ -9,7 +9,7 @@
 
 #include <regex.h>
 #include <boost/regex.hpp>
-#include "../include/gary_common/gary_string.h"
+#include "../../include/gary_common/gary_string.h"
 #include "word_gram.h"
 using namespace naive_bayes_;
 
