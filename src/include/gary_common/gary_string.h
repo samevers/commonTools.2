@@ -355,6 +355,7 @@ int all_suffix(std::vector<std::string> segment, std::vector<std::string>& all_s
 	return 0;
 }
 
+// Read a directory and files within.
 inline
 int readFiles(std::string dirname, std::vector<std::string>& filenames)
 {

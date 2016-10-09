@@ -46,7 +46,7 @@ int EditDist::edit(vector<string>& str1, vector<string>& str2)
 				d = 0;
 			}else
 			{
-				d = 1;
+				d = 2;
 			}
 			ptr[i][j] = min(tmp, ptr[i-1][j-1] + d);
 		}

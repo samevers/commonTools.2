@@ -2,7 +2,7 @@
 ## INPUT is a segment outcome
 INPUT=$1
 
-cd ../textmodel
+cd ../classify/textModel
 ## predict
 for(( i = 1; i <=20; i++ ))
 do

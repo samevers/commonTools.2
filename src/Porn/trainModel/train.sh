@@ -1,5 +1,5 @@
-cd ../textmodel/tmp
-ln -s ../Porn/train/train.*.seg ./
+cd ../classify/textModel/tmp
+ln -s ../../Porn/train/train.*.seg ./
 
 cd ..
 
@@ -10,7 +10,7 @@ do
 	echo $filename
 	echo $modelname
 	./src/main.gram tmp/$filename
-	mv model.gram ../Porn/model_out/$modelname
+	mv model.gram ../../Porn/model_out/$modelname
 done
 
 ## Features Selection
@@ -23,9 +23,9 @@ do
 done
 
 ## ln -s 
-cd ../../textmodel/tmp
+cd ../../classify/textModel/tmp
 for(( i = 1; i <=20; i++ ))
 do
 	modelfile="model."$i".gram"
-	ln -s ../Porn/model_out/$modelfile ./
+	ln -s ../../Porn/model_out/$modelfile ./
 done

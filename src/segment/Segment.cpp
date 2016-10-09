@@ -1,14 +1,17 @@
 #include "Segment.h"
+#include "GraphSegmentor.h"
 
 using namespace std;
 const int32_t MAXLEN_ = 20480;
+const static int _MAXQUERYLEN=MAXLEN_/2;
 
 SEGMENT_1* SEGMENT_1::ddinstance;
 
 SEGMENT_1::SEGMENT_1():
     m_graph_segment(65536)
 {
-	EncodingConvertor::initializeInstance(); 
+	EncodingConvertor::initializeInstance();
+	ec = EncodingConvertor::getInstance();
     analysis::DicTree::instance()->loadDic();
     m_graph_segment.open(analysis::DicTree::instance());
 }
@@ -35,6 +38,7 @@ void SEGMENT_1::releaseInstance(){
 
 int32_t SEGMENT_1::Init()
 {
+	segmentor = WordSegmentor::getInstance();
     //m_graph_segment.open(analysis::DicTree::instance());
 }
 int32_t SEGMENT_1::Release()
@@ -78,6 +82,5 @@ int32_t SEGMENT_1::Segment_(
     }
 	return 0;
 }
-
 
 
