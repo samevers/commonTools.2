@@ -171,13 +171,18 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 			double sum = 0;
 			for (int i =0; i < vec.size(); i++)
 			{
-				sum += clusterSet[i][k];
+				//_INFO("i = %d, k = %d ----4", i,k);
+				//_INFO("size of clusterSet[%d].size = %d", i,clusterSet[i].size());
+				sum += dataVec[i][k];
 			}
-			double value = sum/(double)n_cluster;
+			double value = sum/(double)vec.size();
 			cent[j][k] = value;
+			//_INFO("------------------5");
 			if(cent[j][k] != 0)
 			{
+				//_INFO("------------------6");
 				centEleNum[j] ++;
+				//_INFO("------------------7");
 			}
 		}
 	}
