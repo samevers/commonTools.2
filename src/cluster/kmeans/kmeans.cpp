@@ -15,6 +15,9 @@ using namespace std;
 int n_cluster = 10;
 map<int, vector<double> > clusterSet;
 int dimension = 0;
+int eleNumInLine = 0;
+vector<int> dataVecEleNum;//每个文本向量中词的个数
+vector<int> centEleNum;	// cent中每个文本向量中词的个数
 
 typedef struct { double x, y; int group; } point_t, *point;
 
@@ -38,13 +41,20 @@ int readFile(string filename, vector<vector<double> >& dataVec)
 		weightArr.clear();
 		weightArrDou.clear();
 		spaceGary::StringSplit(line, weightArr, " ");
+		//cerr << "size of line = " << weightArr.size() << endl;
 		for (int i = 0; i < weightArr.size(); i++)
 		{
 			double w = spaceGary::toDouble(weightArr[i]);
+			if(w > 0)
+			{
+				eleNumInLine ++;
+			}
 			weightArrDou.push_back(w);
 		}
 		dataVec.push_back(weightArrDou);
-		lineNum ++;
+		dataVecEleNum.push_back(eleNumInLine);
+		if(lineNum ++ % 10 == 0)
+			cerr << lineNum << endl;
 		if (dimension == 0)
 			dimension = weightArr.size();
 		else if(dimension != weightArr.size())
@@ -101,12 +111,13 @@ InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 	for (int i = 0; i < n_cluster; i ++)
 	{
 		cent.push_back(dataVec[i]);
+		centEleNum.push_back(dataVecEleNum[i]);
 	}
 
 	return 0;
 }
 inline int
-nearest(vector<double>& dot, vector<vector<double> >& cent, double *d2, double& cost)
+nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, double *d2, double& cost)
 {
 	int i, min_i;
 	vector<double> c;
@@ -116,7 +127,7 @@ nearest(vector<double>& dot, vector<vector<double> >& cent, double *d2, double& 
 	min_i = 0;
 	for (int i = 0; i < cent.size(); i++)
 	{
-		if (min_d > (d = distDot(cent[i], dot))) {
+		if (min_d > (d = distDot(cent[i], dot)/(double)(dotEleNum + centEleNum[i]))) {
 			min_d = d; min_i = i;
 		}
 	}
@@ -132,7 +143,8 @@ int cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, dou
 	for (int i = 0; i < dataVec.size(); i++)
 	{
 		dot = dataVec[i];
-		nearestCluster = nearest(dot, cent, d2,cost);
+		int dotEleNum = dataVecEleNum[i];
+		nearestCluster = nearest(dot,dotEleNum, cent, d2,cost);
 		clusterSet[nearestCluster].push_back(i);
 	}
 
@@ -152,6 +164,7 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 	for (iter = clusterSet.begin(); iter != clusterSet.end(); iter++)
 	{
 		int j = iter->first;// center
+		centEleNum[j] = 0;
 		vec = iter->second;// children vec position
 		for(int k = 0; k < dimension; k++)
 		{
@@ -162,6 +175,10 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 			}
 			double value = sum/(double)n_cluster;
 			cent[j][k] = value;
+			if(cent[j][k] != 0)
+			{
+				centEleNum[j] ++;
+			}
 		}
 	}
 
@@ -175,12 +192,18 @@ int main(int args, char** argv)
 	int i;
 	// filename
 	string filename = argv[1];
+
 	// gen vector
+	_INFO("begin to load data and generate vectors ...");
 	vector<vector<double> > dataVec;
 	gen_dot(filename,dataVec);//
+	_INFO("gen_dot() is ok ...");
+
 	// select century dots
 	vector<vector<double> > cent;
+	_INFO("Make InitCent() ...");
 	InitCent(dataVec,cent);//
+	_INFO("InitCent() is ok ...");
 	
 	double thres = 1;
 	double cost = PTS;
@@ -188,9 +211,15 @@ int main(int args, char** argv)
 	while(1)
 	{
 		// cluster
+		_INFO("Begin to make cluster() ...");
 		cluster(dataVec, cent,cost);
+		_INFO("cluster() is over ...");
+
 		// reSelect century dots
+		_INFO("Begin to make Cent() ...");
 		Cent(dataVec, cent);
+		_INFO("Cent() is over ...");
+
 		// print cost
 		_INFO("COST = %f\n", cost);
 	}
