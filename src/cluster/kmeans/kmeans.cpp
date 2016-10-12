@@ -287,8 +287,9 @@ int main(int args, char** argv)
 		for(int c = 0; c< clusterSet[j].size(); c++)
 		{
 			int kk = clusterSet[j][c];
+			cerr << "\tline:" << kk+1 << "\t";
 			for(int cc = 0; cc < dimension; cc++)
-				cerr << "\t" << dataVec[kk][cc] << " ";
+				cerr << dataVec[kk][cc] << " ";
 			cerr << endl;
 		}
 		cerr << endl<< endl;
