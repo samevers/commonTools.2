@@ -9,11 +9,12 @@
 #include "../../include/service_log.hpp"
 #include "../../include/gary_common/gary_string.h"
 #include "../../include/gary_common/gary_common.h"
+#include "../../include/gary_common/gary_math.h"
 
 using namespace std;
 
-int n_cluster = 10;
-map<int, vector<double> > clusterSet;
+int n_cluster = 3;
+map<int, vector<int> > clusterSet;
 int dimension = 0;
 int eleNumInLine = 0;
 vector<int> dataVecEleNum;//每个文本向量中词的个数
@@ -42,6 +43,7 @@ int readFile(string filename, vector<vector<double> >& dataVec)
 		weightArrDou.clear();
 		spaceGary::StringSplit(line, weightArr, " ");
 		//cerr << "size of line = " << weightArr.size() << endl;
+		eleNumInLine = 0;
 		for (int i = 0; i < weightArr.size(); i++)
 		{
 			double w = spaceGary::toDouble(weightArr[i]);
@@ -76,7 +78,15 @@ int gen_dot(string filename, vector<vector<double> >& dataVec)
 		_ERROR("Fail to readFile() ...\n");
 		return -1;
 	}
-	
+
+	_INFO("PRINT dataVec Content :");
+	for(int i = 0; i < dataVec.size(); i++)
+	{
+		for (int j = 0; j < dataVec[i].size(); j++)
+			cout << dataVec[i][j] << " ";
+		cout << endl;
+	}
+
 	return 0;
 }
 
@@ -91,7 +101,8 @@ inline double distDot(vector<double> a, vector<double> b)
 	double sumSquare = 0;
 	for(int i = 0; i < a.size(); i++)
 	{
-		sumSquare += (a[i] - b[i])*(a[i] - b[i]);
+		sumSquare += spaceGary::GAbs_(a[i] , b[i]);//*(a[i] - b[i]);
+		//sumSquare += (a[i] - b[i])*(a[i] - b[i]);
 	}
 
 	double dist = sqrt(sumSquare);
@@ -114,6 +125,15 @@ InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 		centEleNum.push_back(dataVecEleNum[i]);
 	}
 
+	cout << "PRINT cent Content : " << endl;
+	for(int i = 0; i < cent.size(); i++)
+	{
+		for (int j = 0; j < cent[i].size(); j++)
+			cout << cent[i][j] << " ";
+		cout << endl;
+	}
+
+	
 	return 0;
 }
 inline int
@@ -132,6 +152,7 @@ nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, doubl
 		}
 	}
 	if (d2) *d2 = min_d;
+	cout << "distDot : " << distDot(cent[min_i], dot) << "\tdotEleNum : " << dotEleNum << "\tcentEleNum : " << centEleNum[min_i] << "\tdist : " << min_d << endl;
 	cost += min_d;
 	return min_i;
 }
@@ -140,12 +161,23 @@ int cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, dou
 	vector<double> dot;
 	double *d2;
 	int nearestCluster;
+	clusterSet.clear();
 	for (int i = 0; i < dataVec.size(); i++)
 	{
 		dot = dataVec[i];
 		int dotEleNum = dataVecEleNum[i];
 		nearestCluster = nearest(dot,dotEleNum, cent, d2,cost);
 		clusterSet[nearestCluster].push_back(i);
+
+		cout << "current dot : ";
+		for(int j = 0; j < dot.size(); j++)
+			cout << dot[j] << " ";
+		cout << endl;
+		cout << "nearest cent : ";
+		for(int j = 0; j < cent[nearestCluster].size(); j++)
+			cout << cent[nearestCluster][j] << " ";
+		cout << endl << endl;
+
 	}
 
 	return 0;
@@ -159,33 +191,43 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 		return -1;
 	}
 	
-	vector<double> vec;
-	map<int,vector<double> >::iterator iter;
+	vector<int> vecset;
+	map<int,vector<int> >::iterator iter;
 	for (iter = clusterSet.begin(); iter != clusterSet.end(); iter++)
 	{
 		int j = iter->first;// center
 		centEleNum[j] = 0;
-		vec = iter->second;// children vec position
-		for(int k = 0; k < dimension; k++)
+		vecset = iter->second;// children vec position
+		for(int col = 0; col < dimension; col++)
 		{
 			double sum = 0;
-			for (int i =0; i < vec.size(); i++)
+			for (int i =0; i < vecset.size(); i++)
 			{
-				//_INFO("i = %d, k = %d ----4", i,k);
+				int chi = vecset[i];
+				//_INFO("i = %d, col = %d ----4", i,col);
 				//_INFO("size of clusterSet[%d].size = %d", i,clusterSet[i].size());
-				sum += dataVec[i][k];
+				sum += dataVec[chi][col];
 			}
-			double value = sum/(double)vec.size();
-			cent[j][k] = value;
-			//_INFO("------------------5");
-			if(cent[j][k] != 0)
+			double value = sum/(double)vecset.size();
+			cent[j][col] = value;
+			_INFO("------------------5");
+			if(cent[j][col] != 0)
 			{
-				//_INFO("------------------6");
+				_INFO("------------------6");
 				centEleNum[j] ++;
-				//_INFO("------------------7");
+				_INFO("------------------7");
 			}
 		}
 	}
+	// print cent content
+	cout << "PRINT cent Content :" << endl;
+	for(int i = 0; i < cent.size(); i++)
+	{
+		for (int j = 0; j < cent[i].size(); j++)
+			cout << cent[i][j] << " ";
+		cout << endl;
+	}
+
 
 	return 0;
 }
@@ -209,17 +251,18 @@ int main(int args, char** argv)
 	_INFO("Make InitCent() ...");
 	InitCent(dataVec,cent);//
 	_INFO("InitCent() is ok ...");
-	
-	double thres = 1;
+
+	double thres = 2;
+	double precost = 0;
 	double cost = PTS;
-	//while(cost > thres)
 	while(1)
 	{
+		cost = 0;
 		// cluster
 		_INFO("Begin to make cluster() ...");
 		cluster(dataVec, cent,cost);
 		_INFO("cluster() is over ...");
-
+		
 		// reSelect century dots
 		_INFO("Begin to make Cent() ...");
 		Cent(dataVec, cent);
@@ -227,6 +270,31 @@ int main(int args, char** argv)
 
 		// print cost
 		_INFO("COST = %f\n", cost);
+		
+		_INFO("cost = %f\tprecost = %f\n",cost,precost);
+		if (spaceGary::GAbs_(cost,precost) < 0.001)
+		{
+			break;
+		}
+		precost = cost;
+	}
+
+	// cluster outcome
+	for(int j = 0; j < cent.size(); j++)
+	{
+		cerr << "cent dot : ";
+		for(int i = 0; i < cent[j].size(); i++)
+			cerr << cent[j][i] << " ";
+		cerr << endl;
+		
+		for(int c = 0; c< clusterSet[j].size(); c++)
+		{
+			int kk = clusterSet[j][c];
+			for(int cc = 0; cc < dimension; cc++)
+				cerr << "\t" << dataVec[kk][cc] << " ";
+			cerr << endl;
+		}
+		cerr << endl<< endl;
 	}
 
 	return 0;
