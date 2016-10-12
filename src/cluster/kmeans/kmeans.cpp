@@ -210,12 +210,9 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 			}
 			double value = sum/(double)vecset.size();
 			cent[j][col] = value;
-			_INFO("------------------5");
 			if(cent[j][col] != 0)
 			{
-				_INFO("------------------6");
 				centEleNum[j] ++;
-				_INFO("------------------7");
 			}
 		}
 	}
