@@ -79,13 +79,13 @@ int gen_dot(string filename, vector<vector<double> >& dataVec)
 		return -1;
 	}
 
-	_INFO("PRINT dataVec Content :");
-	for(int i = 0; i < dataVec.size(); i++)
-	{
-		for (int j = 0; j < dataVec[i].size(); j++)
-			cout << dataVec[i][j] << " ";
-		cout << endl;
-	}
+//	_INFO("PRINT dataVec Content :");
+//	for(int i = 0; i < dataVec.size(); i++)
+//	{
+//		for (int j = 0; j < dataVec[i].size(); j++)
+//			cout << dataVec[i][j] << " ";
+//		cout << endl;
+//	}
 
 	return 0;
 }
@@ -125,13 +125,13 @@ InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 		centEleNum.push_back(dataVecEleNum[i]);
 	}
 
-	cout << "PRINT cent Content : " << endl;
-	for(int i = 0; i < cent.size(); i++)
-	{
-		for (int j = 0; j < cent[i].size(); j++)
-			cout << cent[i][j] << " ";
-		cout << endl;
-	}
+//	cout << "PRINT cent Content : " << endl;
+//	for(int i = 0; i < cent.size(); i++)
+//	{
+//		for (int j = 0; j < cent[i].size(); j++)
+//			cout << cent[i][j] << " ";
+//		cout << endl;
+//	}
 
 	
 	return 0;
@@ -152,7 +152,7 @@ nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, doubl
 		}
 	}
 	if (d2) *d2 = min_d;
-	cout << "distDot : " << distDot(cent[min_i], dot) << "\tdotEleNum : " << dotEleNum << "\tcentEleNum : " << centEleNum[min_i] << "\tdist : " << min_d << endl;
+	// cout << "distDot : " << distDot(cent[min_i], dot) << "\tdotEleNum : " << dotEleNum << "\tcentEleNum : " << centEleNum[min_i] << "\tdist : " << min_d << endl;
 	cost += min_d;
 	return min_i;
 }
@@ -169,14 +169,14 @@ int cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, dou
 		nearestCluster = nearest(dot,dotEleNum, cent, d2,cost);
 		clusterSet[nearestCluster].push_back(i);
 
-		cout << "current dot : ";
-		for(int j = 0; j < dot.size(); j++)
-			cout << dot[j] << " ";
-		cout << endl;
-		cout << "nearest cent : ";
-		for(int j = 0; j < cent[nearestCluster].size(); j++)
-			cout << cent[nearestCluster][j] << " ";
-		cout << endl << endl;
+//		cout << "current dot : ";
+//		for(int j = 0; j < dot.size(); j++)
+//			cout << dot[j] << " ";
+//		cout << endl;
+//		cout << "nearest cent : ";
+//		for(int j = 0; j < cent[nearestCluster].size(); j++)
+//			cout << cent[nearestCluster][j] << " ";
+//		cout << endl << endl;
 
 	}
 
@@ -217,13 +217,13 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 		}
 	}
 	// print cent content
-	cout << "PRINT cent Content :" << endl;
-	for(int i = 0; i < cent.size(); i++)
-	{
-		for (int j = 0; j < cent[i].size(); j++)
-			cout << cent[i][j] << " ";
-		cout << endl;
-	}
+//	cout << "PRINT cent Content :" << endl;
+//	for(int i = 0; i < cent.size(); i++)
+//	{
+//		for (int j = 0; j < cent[i].size(); j++)
+//			cout << cent[i][j] << " ";
+//		cout << endl;
+//	}
 
 
 	return 0;
