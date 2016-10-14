@@ -44,6 +44,13 @@ int KMEANS_::readFile(string filename, vector<vector<double> >& dataVec)
 				eleNumInLine ++;
 			}
 			weightArrDou.push_back(w);
+
+			// To get Max element of each column.
+			if(maxEleVector.size() > 0)
+			{
+				if(weightArrDou[i] > maxEleVector[i])
+					maxEleVector[i] == weightArrDou[i];
+			}
 		}
 		dataVec.push_back(weightArrDou);
 		dataVecEleNum.push_back(eleNumInLine);
@@ -55,6 +62,12 @@ int KMEANS_::readFile(string filename, vector<vector<double> >& dataVec)
 		{
 			_ERROR("Dimension of the input file, is not consistent.\n");
 			return -1;
+		}
+
+		// To get Max element of each column.
+		if(maxEleVector.size() == 0)
+		{
+			maxEleVector = weightArrDou;
 		}
 	}
 
@@ -94,12 +107,50 @@ double KMEANS_::distDot(vector<double> a, vector<double> b)
 	double sumSquare = 0;
 	for(int i = 0; i < a.size(); i++)
 	{
-		sumSquare += spaceGary::GAbs_(a[i] , b[i]);//*(a[i] - b[i]);
-		//sumSquare += (a[i] - b[i])*(a[i] - b[i]);
+		//sumSquare += spaceGary::GAbs_(a[i] , b[i]);
+		sumSquare += (a[i] - b[i])*(a[i] - b[i]);
 	}
 
 	double dist = sqrt(sumSquare);
 	return dist;
+}
+
+int KMEANS_::InitCentAverage(vector<vector<double> > dataVec, vector<vector<double> >& cent)
+{
+	// maxEleVector
+
+	if (n_cluster > dataVec.size())
+	{
+		_ERROR("n_cluster is too large....\n");
+		return -1;
+	}
+	vector<double> tmp(dimension,0);
+	vector<double> step(dimension,0);
+	for(int j = 0; j < dimension; j++)
+	{
+		step[j] = maxEleVector[j]/(double)(n_cluster+1);
+	}
+	for (int i = 0; i < n_cluster; i ++)
+	{
+		int eleNoneZero = 0;
+		for(int j = 0; j < dimension; j++)
+		{
+			tmp[j] += step[j];
+			if (tmp[j] != 0)
+				eleNoneZero++;
+		}
+		cent.push_back(tmp);
+		centEleNum.push_back(eleNoneZero);
+	}
+	cout << "Print InitCentAverage():" << endl;
+	for(int i = 0; i < cent.size(); i++)
+	{
+		for(int j = 0; j < cent[i].size(); j++)
+			cout << cent[i][j] << " ";
+		cout << endl;
+	}
+	cout << endl;
+	return 0;
 }
 
 
@@ -117,15 +168,6 @@ int KMEANS_::InitCent(vector<vector<double> > dataVec, vector<vector<double> >& 
 		centEleNum.push_back(dataVecEleNum[i]);
 	}
 
-//	cout << "PRINT cent Content : " << endl;
-//	for(int i = 0; i < cent.size(); i++)
-//	{
-//		for (int j = 0; j < cent[i].size(); j++)
-//			cout << cent[i][j] << " ";
-//		cout << endl;
-//	}
-
-	
 	return 0;
 }
 
@@ -177,11 +219,11 @@ int KMEANS_::cluster(vector<vector<double> >& dataVec, vector<vector<double> >& 
 
 int KMEANS_::Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 {
-	if (cent.size() != clusterSet.size())
-	{
-		_ERROR("cent.size != clusterSet.size, please check.\n");
-		return -1;
-	}
+//	if (cent.size() != clusterSet.size())
+//	{
+//		_ERROR("cent.size != clusterSet.size, please check.\n");
+//		return -1;
+//	}
 	
 	vector<int> vecset;
 	map<int,vector<int> >::iterator iter;
@@ -208,14 +250,16 @@ int KMEANS_::Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent
 			}
 		}
 	}
+
 	// print cent content
-//	cout << "PRINT cent Content :" << endl;
-//	for(int i = 0; i < cent.size(); i++)
-//	{
-//		for (int j = 0; j < cent[i].size(); j++)
-//			cout << cent[i][j] << " ";
-//		cout << endl;
-//	}
+	cout << "PRINT cent Content :" << endl;
+	for(int i = 0; i < cent.size(); i++)
+	{
+		for (int j = 0; j < cent[i].size(); j++)
+			cout << cent[i][j] << " ";
+		cout << endl;
+	}
+	cout << endl;
 
 
 	return 0;
@@ -237,32 +281,30 @@ int KMEANS_::Run_(string filename)
 	// select century dots
 	vector<vector<double> > cent;
 	_INFO("Make InitCent() ...");
-	if(InitCent(dataVec,cent) == -1)
+	if(InitCent(dataVec,cent) == -1)// Outperforms InitCentAverage() method.
 		return -1;
 	_INFO("InitCent() is ok ...");
 
 	double precost = 0;
 	double cost = PTS;
+	int iter = 1;
 	while(1)
 	{
 		cost = 0;
-		// cluster
-		_INFO("Begin to make cluster() ...");
+		//_INFO("Begin to make cluster() ...");
 		if(cluster(dataVec, cent,cost) == -1)
 			return -1;
-		_INFO("cluster() is over ...");
+		//_INFO("cluster() is over ...");
 		
 		// reSelect century dots
-		_INFO("Begin to make Cent() ...");
+		//_INFO("Begin to make Cent() ...");
 		if(Cent(dataVec, cent) == -1)
 			return -1;
-		_INFO("Cent() is over ...");
+		//_INFO("Cent() is over ...");
 
-		// print cost
-		_INFO("COST = %f\n", cost);
-		
-		_INFO("cost = %f\tprecost = %f\n",cost,precost);
-		if (spaceGary::GAbs_(cost,precost) < thres)
+		double gabs = spaceGary::GAbs_(cost,precost);
+		_INFO("iter = %d, cost = %f, precost = %f, GAbs = %f", iter++, cost, precost, gabs);
+		if (gabs < thres)
 		{
 			break;
 		}

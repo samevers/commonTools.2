@@ -20,6 +20,7 @@ class KMEANS_{
 		std::map<int, std::vector<int> > clusterSet;
 		std::vector<int> dataVecEleNum;//每个文本向量中词的个数
 		std::vector<int> centEleNum;	// cent中每个文本向量中词的个数
+		std::vector<double> maxEleVector; // 训练矩阵中，每一列的最大数构成的向量，用来求解InitCent 的平均簇中心；
 		int eleNumInLine;
 		double thres;
 	public:
@@ -33,6 +34,7 @@ class KMEANS_{
 		int gen_dot(std::string filename, std::vector<std::vector<double> >& dataVec);
 		double distDot(std::vector<double> a, std::vector<double> b);
 		int InitCent(std::vector<std::vector<double> > dataVec, std::vector<std::vector<double> >& cent);
+		int InitCentAverage(vector<vector<double> > dataVec, vector<vector<double> >& cent);
 		int nearest(std::vector<double>& dot, int dotEleNum, std::vector<std::vector<double> >& cent, double *d2, double& cost);
 		int cluster(std::vector<std::vector<double> >& dataVec, std::vector<std::vector<double> >& cent, double& cost);
 		int Cent(std::vector<std::vector<double> > dataVec, std::vector<std::vector<double> >& cent);
