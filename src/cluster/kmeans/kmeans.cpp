@@ -1,30 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <fstream>
-#include <math.h>
-#include "../../include/service_log.hpp"
-#include "../../include/gary_common/gary_string.h"
-#include "../../include/gary_common/gary_common.h"
-#include "../../include/gary_common/gary_math.h"
+#include "kmeans.h"
 
 using namespace std;
 
-int n_cluster = 3;
-map<int, vector<int> > clusterSet;
-int dimension = 0;
-int eleNumInLine = 0;
-vector<int> dataVecEleNum;//每个文本向量中词的个数
-vector<int> centEleNum;	// cent中每个文本向量中词的个数
+KMEANS_::KMEANS_(int clusterNum, double thresValue)
+{
+	n_cluster = clusterNum;
+	thres = thresValue;
+	dimension = 0;
+}
+KMEANS_::~KMEANS_()
+{
+	;
+}
 
-typedef struct { double x, y; int group; } point_t, *point;
-
-int readFile(string filename, vector<vector<double> >& dataVec)
+int KMEANS_::readFile(string filename, vector<vector<double> >& dataVec)
 {
 	ifstream infile;
+	_INFO("Read File : %s",  filename.c_str());
 	if(spaceGary::open_f(filename, infile) == -1)
 	{
 		_ERROR("Fail to open file %s\n", filename);
@@ -56,7 +48,7 @@ int readFile(string filename, vector<vector<double> >& dataVec)
 		dataVec.push_back(weightArrDou);
 		dataVecEleNum.push_back(eleNumInLine);
 		if(lineNum ++ % 10 == 0)
-			cerr << lineNum << endl;
+			_INFO("%d\n", lineNum);
 		if (dimension == 0)
 			dimension = weightArr.size();
 		else if(dimension != weightArr.size())
@@ -70,14 +62,15 @@ int readFile(string filename, vector<vector<double> >& dataVec)
 
 	return lineNum;
 }
-int gen_dot(string filename, vector<vector<double> >& dataVec)
+int KMEANS_::gen_dot(string filename, vector<vector<double> >& dataVec)
 {
 	int lineNum = readFile(filename, dataVec);
 	if(lineNum == -1)
 	{
 		_ERROR("Fail to readFile() ...\n");
 		return -1;
-	}
+	}else
+		_INFO("readFile() is ok ...");
 
 //	_INFO("PRINT dataVec Content :");
 //	for(int i = 0; i < dataVec.size(); i++)
@@ -90,7 +83,7 @@ int gen_dot(string filename, vector<vector<double> >& dataVec)
 	return 0;
 }
 
-inline double distDot(vector<double> a, vector<double> b)
+double KMEANS_::distDot(vector<double> a, vector<double> b)
 {
 	if(a.size() != b.size())
 	{
@@ -110,8 +103,7 @@ inline double distDot(vector<double> a, vector<double> b)
 }
 
 
-inline int
-InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
+int KMEANS_::InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 {
 	if (n_cluster > dataVec.size())
 	{
@@ -136,8 +128,8 @@ InitCent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 	
 	return 0;
 }
-inline int
-nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, double *d2, double& cost)
+
+int KMEANS_::nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, double *d2, double& cost)
 {
 	int i, min_i;
 	vector<double> c;
@@ -156,7 +148,7 @@ nearest(vector<double>& dot, int dotEleNum, vector<vector<double> >& cent, doubl
 	cost += min_d;
 	return min_i;
 }
-int cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, double& cost)
+int KMEANS_::cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, double& cost)
 {
 	vector<double> dot;
 	double *d2;
@@ -183,7 +175,7 @@ int cluster(vector<vector<double> >& dataVec, vector<vector<double> >& cent, dou
 	return 0;
 }
 
-int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
+int KMEANS_::Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 {
 	if (cent.size() != clusterSet.size())
 	{
@@ -231,25 +223,24 @@ int Cent(vector<vector<double> > dataVec, vector<vector<double> >& cent)
 
 #define PTS 100000
 #define K 11
-int main(int args, char** argv)
+int KMEANS_::Run_(string filename)
 {
 	int i;
-	// filename
-	string filename = argv[1];
-
 	// gen vector
 	_INFO("begin to load data and generate vectors ...");
 	vector<vector<double> > dataVec;
-	gen_dot(filename,dataVec);//
+	_INFO("Read File : %s",  filename.c_str());
+	if(gen_dot(filename,dataVec) == -1)
+		return -1;
 	_INFO("gen_dot() is ok ...");
 
 	// select century dots
 	vector<vector<double> > cent;
 	_INFO("Make InitCent() ...");
-	InitCent(dataVec,cent);//
+	if(InitCent(dataVec,cent) == -1)
+		return -1;
 	_INFO("InitCent() is ok ...");
 
-	double thres = 2;
 	double precost = 0;
 	double cost = PTS;
 	while(1)
@@ -257,19 +248,21 @@ int main(int args, char** argv)
 		cost = 0;
 		// cluster
 		_INFO("Begin to make cluster() ...");
-		cluster(dataVec, cent,cost);
+		if(cluster(dataVec, cent,cost) == -1)
+			return -1;
 		_INFO("cluster() is over ...");
 		
 		// reSelect century dots
 		_INFO("Begin to make Cent() ...");
-		Cent(dataVec, cent);
+		if(Cent(dataVec, cent) == -1)
+			return -1;
 		_INFO("Cent() is over ...");
 
 		// print cost
 		_INFO("COST = %f\n", cost);
 		
 		_INFO("cost = %f\tprecost = %f\n",cost,precost);
-		if (spaceGary::GAbs_(cost,precost) < 0.001)
+		if (spaceGary::GAbs_(cost,precost) < thres)
 		{
 			break;
 		}
@@ -277,23 +270,28 @@ int main(int args, char** argv)
 	}
 
 	// cluster outcome
+	ofstream outfile;
+	string outFile = filename + ".cluster";
+	if(spaceGary::Build_f(outFile, outfile) == -1)
+		return -1;
 	for(int j = 0; j < cent.size(); j++)
 	{
-		cerr << "cent dot : ";
+		outfile << "cent dot : ";
 		for(int i = 0; i < cent[j].size(); i++)
-			cerr << cent[j][i] << " ";
-		cerr << endl;
+			outfile << cent[j][i] << " ";
+		outfile << endl;
 		
 		for(int c = 0; c< clusterSet[j].size(); c++)
 		{
 			int kk = clusterSet[j][c];
-			cerr << "\tline:" << kk+1 << "\t";
+			outfile << "\tline:" << kk+1 << "\t";
 			for(int cc = 0; cc < dimension; cc++)
-				cerr << dataVec[kk][cc] << " ";
-			cerr << endl;
+				outfile << dataVec[kk][cc] << " ";
+			outfile << endl;
 		}
-		cerr << endl<< endl;
+		outfile << endl<< endl;
 	}
+	outfile.close();
 
 	return 0;
 }
