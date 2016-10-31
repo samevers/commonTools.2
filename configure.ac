@@ -112,6 +112,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Similarity/editDist/Makefile
 	src/classify/feaSel/Makefile
+	src/classify/knn/Makefile
 	src/classify/textModel/Makefile
 	src/jsoncpp/Makefile
 	src/common_base/Makefile
@@ -120,10 +121,12 @@ AC_CONFIG_FILES([
 	src/index/index_da/Makefile
 	src/index/inv_index/Makefile
 	src/index/data_make/Makefile
+	src/index/ahoCorasick/Makefile
 	src/QueryMatch/Makefile
 	src/dialogue/Makefile
 	src/da_search/Makefile
 	src/doc_search/Makefile
+	src/cluster/kmeans/Makefile
 	src/Porn/Predict/Makefile
 	src/http_client/Makefile
 	src/http_server/Makefile
