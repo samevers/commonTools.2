@@ -12,5 +12,5 @@ AM_CPPFLAGS+= -I../../include
 
 bin_PROGRAMS+=test
 test_SOURCES=test.cpp
-test_LDADD= -lpthread -lssplatform -lencoding -libahoCorasick
+test_LDADD= -lpthread -lssplatform -lencoding -L./ -lahoCorasick
 
