@@ -12,14 +12,12 @@ const int MAX_NOVEL_AUTHOR = 1000000;
 const static int MAXSTRLEN = 1024;
 
 char* authorKeys[MAX_NOVEL_AUTHOR];
+//vector<string> authorKeysVec;
 int authorLens[MAX_NOVEL_AUTHOR];
-int authorKeyCount;
+int32_t authorKeyCount;
 map<string,double> novel_author;
 
-//static const string Punctuations = "　～·！＠＃￥％……＆×（）－—＋＝【】｛｝｜＼、；：‘’“”《》，。？、／╚╗＄＾＊＿［］．””’
-//static const string Punctuations = "　～·！＠＃￥％……＆×（）－—＋＝【】｛｝｜＼、；：‘’“”《》，。？、／╚╗＄＾＊＿［］．";
-//static const string Punctuations  = "~·！@#￥%&*（）——+=-{}【】；’：“《》，。？、";
-static const string Punctuations = "";
+static const string Punctuations = "　～·！＠＃￥％……＆×（）－—＋＝【】｛｝｜＼、；：‘’“”《》，。？、／╚╗＄＾＊＿［］．";
 set<unsigned short>  punctuations;
 
 int loadPunctuations()
@@ -71,13 +69,6 @@ bool loadScoreMap(std::string &infile, std::map<std::string, double>& scoreMap) 
 			score = atof(line.substr(pos + 1).c_str());
 		}
 
-		//char dest[MAXSTRLEN];
-		//int glen = ec->t2sgchar(keyword.c_str(), (gchar_t*)dest, MAXSTRLEN / 2, true);
-		//if (glen >= MAXSTRLEN / 2) continue;
-		//dest[glen * 2] = '\0';
-		//keyword = dest;
-
-		//ximin 2014/9/2
 		std::string strkeyword;
 		TrimPunctuation(keyword, strkeyword);
 		std::map<std::string, double>::iterator it = scoreMap.find(strkeyword);
@@ -114,14 +105,23 @@ int main(int argc, char ** argv)
 	loadPunctuations();
 	loadScoreMap(filename, novel_author);
 	authorKeyCount = 0;
+	int32_t num = 0;
 	for (std::map<std::string, double>::iterator it = novel_author.begin(); it != novel_author.end(); ++it) {
 		std::string author = it->first;
+		//if(authorKeyCount > MAX_NOVEL_AUTHOR)
+		//	authorKeys = (char*)realloc(authorKeys, authorKeyCount*sizeof(char*));
 		authorKeys[authorKeyCount] = new char[author.size() + 1];
 		strcpy(authorKeys[authorKeyCount], author.c_str());
 		authorKeys[authorKeyCount][author.size()] = '\0';
 		authorLens[authorKeyCount] = author.size();
-		++authorKeyCount;
+		authorKeyCount++;
+		num++;
 	}
+	_INFO("Size of novel_author map = %d", novel_author.size());
+	_INFO("num = %d", num);
+	_INFO("Size of authorKeys = %d", authorKeyCount);
+	authorKeyCount = num;
+
 	AhoCorasick authorAho;
 	_INFO("Begin to make authorAho.initialize()\n");
 	authorAho.initialize(authorKeyCount, authorLens, (const char**)authorKeys);
@@ -135,11 +135,20 @@ int main(int argc, char ** argv)
 	}
 
 	string line;
+	string strkeyword;
+	std::vector<std::pair<unsigned, int> > wordIndex;
+	std::vector<std::pair<int, int> > posIndex; 
 	while(getline(infile,line))
 	{
-		std::vector<std::pair<unsigned, int> > wordIndex;
+		_INFO("line= %s", line.c_str());
+		TrimPunctuation(line, strkeyword);
+		line = strkeyword;
+		_INFO("post line= %s", line.c_str());
+		if(line.length() < 2)
+			continue;
+		wordIndex.clear();
 		authorAho.search(line.c_str(), line.size(), wordIndex);
-		std::vector<std::pair<int, int> > posIndex; 
+		posIndex.clear();
 		for (std::vector<std::pair<unsigned, int> >::iterator it = wordIndex.begin(); it != wordIndex.end(); ++it) {
 			int end = it->second;
 			if (end % 2 != 0) continue;	// 模式串与搜索串均为全角，下标必须是偶数。
@@ -152,8 +161,8 @@ int main(int argc, char ** argv)
 		string author;
 		if (posIndex.size() < 1) {
 			author = "";
-			cerr << "[debug_sam] Cannot find an author" << endl;
-			return 0;
+			cerr << "[debug_sam] 1 Cannot find an author:" << line << endl;
+			continue;
 		} else { //作者只取一个
 			int beg = posIndex[0].first;
 			int end = posIndex[0].second;
@@ -165,8 +174,7 @@ int main(int argc, char ** argv)
 			if (author.size() == 0 || it == novel_author.end()) {
 				fprintf(stderr, "find author error [%s] %d %d\n", author.c_str(), beg, end);
 				author = "";
-				cerr << "[debug_sam] Cannot find an author" << endl;
-				return 0;
+				continue;
 			} 
 		}
 	}

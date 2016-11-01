@@ -1,8 +1,10 @@
 #include "AhoCorasick.h"
-
+#include "../../include/service_log.hpp"
 int AhoCorasick::initialize(int iNumber, const int pLen[], const char* patterns[]) {
 	for (int i = 0; i != iNumber; ++i) {  //创建节点
+		_INFO("iNumber = %d", i);
 		insert(patterns[i], pLen[i], i);
+		_INFO("----------initialize");
 	}
 	fixAhoCorasick();  //填写fail指针
 	return 0;
@@ -18,9 +20,13 @@ int AhoCorasick::release(trieNode* &p) {
 }
 
 int AhoCorasick::insert(const char* pattern, int pLen, int patternIndex) {
-	if (pLen <= 0) return -1;  //空串不要
+	if (pLen <= 0) {
+		_INFO("pLen <= 0");
+		return -1;  //空串不要
+	}
 	trieNode* p = root;
-	for (int i = 0; i != pLen; ++i) { //循环至最底部
+	//for (int i = 0; i != pLen; ++i) { //循环至最底部
+	for (int i = 0; i != pLen; i++) { //循环至最底部
 		unsigned index = (unsigned char)pattern[i];
 		if (p->next.find(index) == p->next.end()) {
 			p->next[index] = new trieNode();
@@ -29,6 +35,7 @@ int AhoCorasick::insert(const char* pattern, int pLen, int patternIndex) {
 	}
 	p->end = true;
 	p->pIndex = patternIndex;
+	_INFO("%d term is inserted.", patternIndex);
 	return 0;
 }
 
