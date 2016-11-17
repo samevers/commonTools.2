@@ -130,6 +130,7 @@ AC_CONFIG_FILES([
 	src/Porn/Predict/Makefile
 	src/http_client/Makefile
 	src/http_server/Makefile
+	src/speechProcessing/Makefile
 	src/test/Makefile
 
 ]) AC_OUTPUT
