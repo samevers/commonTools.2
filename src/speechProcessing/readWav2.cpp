@@ -6,6 +6,8 @@
 #include<stdlib.h>
 #include <bitset>
 #include <iomanip>
+#include <algorithm>
+
 //要在int main()的前面加上函数的声明，因为你的函数写在main函数的后面
 int hex_char_value(char ss);
 int hex_to_decimal(const char* s);
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
 		if(WAV.data[i] != 0)
 			iszero = 0;
 		if(iszero == 1)
-			continue;
+			;//continue;
 		//printf("%x ", WAV.data[i]);
 		//continue;
 		//右边为大端
@@ -94,8 +96,7 @@ int main(int argc, char **argv)
 		//printf("%d ", data_complement);
 		setprecision(4);
 		double float_data = (double)(data_complement/(double)32768);	
-		if(float_data != 0)
-			printf("%f ", float_data);
+		printf("%f ", float_data);
  
 		//data_normalization[i] = (char)float_data;
 		//printf("%f ", data_normalization[i]);	 

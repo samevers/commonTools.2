@@ -1,5 +1,7 @@
 #include "readWav.h"
 #include <sstream>
+#include "../include/service_log.hpp"
+
 //要在int main()的前面加上函数的声明，因为你的函数写在main函数的后面
 int hex_char_value(char ss);
 int hex_to_decimal(const char* s);
@@ -51,28 +53,27 @@ int wavStruct::readWav(string& filename, vector<string>& data, vector<double>& f
 
 	//for (unsigned long i =0; i<WAV.data_size; i = i + 2)
 	unsigned long dataSize = WAV.data_size;
-	unsigned long end = dataSize - 1;
-	bool leftzero = 1;
-	bool rightzero = 1;
+	//unsigned long end = dataSize - 1;
+	//bool leftzero = 1;
+	//bool rightzero = 1;
 	for (unsigned long i = 0; i<dataSize; i = i++)
 	{
-		if(WAV.data[i] != 0)
-		{
-			leftzero = 0;
-		}
-	
-		if(WAV.data[end] != 0)
-			rightzero = 0;
-		if(rightzero == 1)
-			dataSize --;
-		if(end >= i)
-			end --;
+	//	if(WAV.data[i] != 0)
+	//	{
+	//		leftzero = 0;
+	//	}
+	//
+	//	if(WAV.data[end] != 0 && rightzero == 1)
+	//		rightzero = 0;
+	//	if(rightzero == 1)
+	//		dataSize --;
+	//	if(end >= i)
+	//		end --;
 
-		if(leftzero == 1 )
-			continue;
+	//	if(leftzero == 1 )
+	//		continue;
 
-
-		if(WAV.data[i] != '0')
+		//if(WAV.data[i] != '0')
 		{
 			string d = char2string(WAV.data[i]);
 			data.push_back(d);
@@ -101,6 +102,46 @@ int wavStruct::readWav(string& filename, vector<string>& data, vector<double>& f
 	delete[] WAV.data;
 	//system("pause");
  
+}
+
+int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begin, int32_t& end, int32_t& size)
+{
+	// Delete '0' in the beginning and the end.
+	if(float1.size() == 0)
+	{
+		_ERROR("Size of speech sequence is illegal. Please check!");
+		return -1;
+	}
+	begin = 0;
+	end = float1.size();
+	while(end > begin)
+	{
+		if(float1[begin] == 0)
+			begin ++;
+		else
+			break;
+	}
+	while(end > begin)
+	{
+		if(float1[end] == 0)
+			end --;
+		else
+			break;
+	}
+	if(end == begin)
+	{
+		_ERROR("The wav file has no voice in.");
+		return -1;
+	}
+	size = end + 1 - begin;
+	//cout << "size = " << size << endl;
+	//for(int32_t i = begin ; i <= end; i++)
+	//{
+	//	cout << float1[i] << " ";
+	//}
+	//cout << endl;
+
+	return 0;
 }
 int hex_char_value(char c)
 {
