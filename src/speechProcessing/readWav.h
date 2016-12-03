@@ -37,7 +37,7 @@ class wavStruct
 		unsigned char *data;			//音频数据 ,这里要定义什么就看样本位数了，我这里只是单纯的复制数据
 	public:
 		int readWav(string& filename, vector<string>& data, vector<double>& float_data,unsigned long size);
-		int postProcessingFloatSequence(vector<double>& float1, int32_t& begin, int32_t& end, int32_t& size);
+		int postProcessingFloatSequence(vector<double>& float1, int32_t& begin, int32_t& end, int32_t& size, vector<double>& float_new);
 };
  
 //int readWav(string& filename, unsigned char* data, vector<double>& float_data,unsigned long size);

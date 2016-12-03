@@ -2,6 +2,10 @@
 #include <sstream>
 #include "../include/service_log.hpp"
 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#define ABS(a) ((a)>0?(a):(-(a)))
+
 //要在int main()的前面加上函数的声明，因为你的函数写在main函数的后面
 int hex_char_value(char ss);
 int hex_to_decimal(const char* s);
@@ -28,7 +32,12 @@ int wavStruct::readWav(string& filename, vector<string>& data, vector<double>& f
 	fstream fs;
 	wavStruct WAV;
 	fs.open(filename.c_str(), ios::binary | ios::in);
- 
+	
+	if(!fs)
+	{
+		_ERROR("Fail to open file %s", filename.c_str());
+		return -1;
+	}
 	fs.seekg(0, ios::end);		//用c++常用方法获得文件大小
 	WAV.file_size = fs.tellg();
  
@@ -51,33 +60,12 @@ int wavStruct::readWav(string& filename, vector<string>& data, vector<double>& f
 	fs.seekg(0x2c);
 	fs.read((char *)WAV.data, sizeof(char)*WAV.data_size);
 
-	//for (unsigned long i =0; i<WAV.data_size; i = i + 2)
+	_INFO("Over making read OPs...");
 	unsigned long dataSize = WAV.data_size;
-	//unsigned long end = dataSize - 1;
-	//bool leftzero = 1;
-	//bool rightzero = 1;
 	for (unsigned long i = 0; i<dataSize; i = i++)
 	{
-	//	if(WAV.data[i] != 0)
-	//	{
-	//		leftzero = 0;
-	//	}
-	//
-	//	if(WAV.data[end] != 0 && rightzero == 1)
-	//		rightzero = 0;
-	//	if(rightzero == 1)
-	//		dataSize --;
-	//	if(end >= i)
-	//		end --;
-
-	//	if(leftzero == 1 )
-	//		continue;
-
-		//if(WAV.data[i] != '0')
-		{
-			string d = char2string(WAV.data[i]);
-			data.push_back(d);
-		}
+		string d = char2string(WAV.data[i]);
+		data.push_back(d);
 		//右边为大端
 		unsigned long data_low = WAV.data[i];
 		unsigned long data_high = WAV.data[i + 1];
@@ -104,7 +92,7 @@ int wavStruct::readWav(string& filename, vector<string>& data, vector<double>& f
  
 }
 
-int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begin, int32_t& end, int32_t& size)
+int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begin, int32_t& end, int32_t& size, vector<double>& float_new)
 {
 	// Delete '0' in the beginning and the end.
 	if(float1.size() == 0)
@@ -118,16 +106,19 @@ int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begi
 	{
 		if(float1[begin] == 0)
 			begin ++;
-		else
-			break;
-	}
-	while(end > begin)
-	{
 		if(float1[end] == 0)
 			end --;
-		else
+		if(float1[begin] != 0 && float1[end] != 0)
 			break;
 	}
+	
+//	while(end > begin)
+//	{
+//		if(float1[end] == 0)
+//			end --;
+//		else
+//			break;
+//	}
 	if(end == begin)
 	{
 		_ERROR("The wav file has no voice in.");
@@ -140,6 +131,12 @@ int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begi
 	//	cout << float1[i] << " ";
 	//}
 	//cout << endl;
+	float_new.clear();
+	int32_t i = begin;
+	while(i <= end)
+	{
+		float_new.push_back(float1[i++]);
+	}
 
 	return 0;
 }

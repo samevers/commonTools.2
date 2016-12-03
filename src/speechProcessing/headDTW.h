@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 using namespace std;
 
 //#define DTWMAXNUM 2000
@@ -28,7 +29,8 @@ class DTW_{
 		/* 返回两个数组之间的匹配距离,如果返回－1.0，表明数组长度太大了
 		/*****************************************************************************/
 		// double DTWDistanceFun(double *A,int32_t I,double *B,int32_t J,int32_t r);
-		double DTWDistanceFun(vector<double>& A, vector<double>& B,int32_t r);
+		double DTWDistanceFun(vector<double>& A, vector<double>& B, int32_t r);
+		double DTWDistanceFunOri(vector<double>& A, vector<double>& B, int32_t r);
 		double DTWDistanceFun(vector<double>& A, int32_t& begin1, int32_t& end1, vector<double>& B, int32_t& begin2, int32_t& end2, int32_t r);
 		
 		/*****************************************************************************/
