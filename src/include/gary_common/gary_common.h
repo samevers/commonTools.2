@@ -12,7 +12,7 @@
 #include "twsetypedef.h"
 #include <string>
 #include <fstream>
-
+#include "../service_log.hpp"
 namespace spaceGary
 {
 
@@ -86,14 +86,16 @@ int open_f(std::string filename, std::ifstream& infile)
 {
 	if(filename.length() == 0)
 	{
-		std::cerr << "ERROR: input file name is NULL....... FALSE !" << std::endl;
+		//std::cerr << "ERROR: input file name is NULL....... FALSE !" << std::endl;
+		_INFO("ERROR: input file name is NULL....... FALSE !");
 		return -1;
 	}
 
 	infile.open(filename.c_str(), std::ios::in);
 	if(!infile)
 	{
-		std::cerr << "ERROR: fail to open input file, please check the file is real !" << std::endl;
+		//std::cerr << "ERROR: fail to open input file, please check the file is real !" << std::endl;
+		_INFO("ERROR: fail to open input file, please check the file is real !");
 		return -1;
 	}
 
@@ -108,14 +110,14 @@ int Build_f(std::string filename, std::ofstream& outfile)
 {
 	if(filename.length() == 0)
 	{
-		std::cerr << "ERROR: output file name is NUL !" << std::endl;
+		_INFO("ERROR: output file name is NUL !");
 		return -1;
 	}
 
 	outfile.open(filename.c_str(), std::ios::out);
 	if(!outfile)
 	{
-		std::cerr << "ERROR: fail to build output file, please check !" << std::endl;
+		_INFO("ERROR: fail to build output file, please check !");
 		return -1;
 	}
 
