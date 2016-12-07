@@ -11,6 +11,7 @@ int hex_char_value(char ss);
 int hex_to_decimal(const char* s);
 //string hex_to_binary(char* szHex);
 
+
 string char2string(unsigned char input)
 {
 	stringstream os;
@@ -133,6 +134,7 @@ int wavStruct::postProcessingFloatSequence(vector<double>& float1, int32_t& begi
 	//cout << endl;
 	float_new.clear();
 	int32_t i = begin;
+	int32_t num = 0;
 	while(i <= end)
 	{
 		float_new.push_back(float1[i++]);

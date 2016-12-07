@@ -333,6 +333,12 @@ int Http_Server::recv_request(int fd)
         delete worker;
         return -1;
     }
+	// 没有content，返回－1;
+	if(worker->content_len == 0)
+	{
+		_INFO("worker->content_len = 0, return -1.");
+		return -1;
+	}
     worker->genContentBuf();	// 设置content 的 buf 空间
 	memset(worker->content_buf, '\0', 
 			worker->content_len);
@@ -446,7 +452,21 @@ int Http_Server::GetInfo(Worker* worker) {
         free(uri);
         return ret;
     }
-    worker->request_url.assign(uri);
+	int loc;
+	string url(uri);
+	if((loc = url.find("?")) == 0)
+	{
+		url = url.substr(1,url.length() - 1);
+		if(url == "")
+		{
+			_ERROR("url is NULL .... Please Check!");
+			return -1;
+		}
+	}
+	_INFO("uri = %s", uri);
+	_INFO("url = %s", url.c_str());
+    worker->request_url.assign(url.c_str());
+    //worker->request_url.assign(uri);
     buf = header.c_str() + header.find("Content-Length:");
     if(sscanf(buf,"Content-Length: %d",&worker->content_len) != 1) 
 	{
@@ -497,16 +517,16 @@ int Http_Server::readn_timeout(SocketHandle * hdle, char* content, int buf_len, 
 	std::string & _buffer = hdle->get_read_buf();				// 读取content 内容
 	int left = buf_len - _buffer.length();
 	int fd = hdle->get_fd();
-	//_INFO("_buffer in readn_timeout = %s" ,_buffer.c_str());
+	_INFO("_buffer in readn_timeout = %s" ,_buffer.c_str());
 	_INFO("buf_len : %d" , buf_len);
-	//_INFO("_buffer.length : %d", _buffer.length());
+	_INFO("_buffer.length : %d", _buffer.length());
 	if(left <= 0)
 	{
         memcpy(content, _buffer.substr(0,buf_len).c_str(), buf_len);	// 将 content内容赋值到 content 变量
         _buffer = _buffer.substr(buf_len);
 		//cerr << "content : " << content << "####"<< endl;
-		//_INFO("Content = %s", content);
-		//_INFO("_buffer = %s", _buffer);
+		_INFO("Content = %s", content);
+		_INFO("_buffer = %s", _buffer);
 		return buf_len;
 	}
     memcpy(content, _buffer.c_str(), _buffer.length());

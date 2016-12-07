@@ -8,6 +8,8 @@
 #include "similarity.h"
 #include "../include/gary_common/gary_common.h"
 #include <sys/time.h>
+#include "../mfccDtw/WaveFunction.h"
+
 extern "C" {
 //#include <interf_dec.h>
 #include "opencore-amr/amrnb/interf_dec.h"
@@ -17,10 +19,15 @@ using namespace std;
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
-#define ABS(a) ((a)>0?(a):(-(a)))
+//#define ABS(a) ((a)>0?(a):(-(a)))
+static const int32_t sequenceLength = 155000;	// 截取的非0语音序列最大长度
+static const int32_t BIGDIST = 1000000;
+static const int window = 1;					// 因为app 每1分钟发送一个监控语音内容，默认取2分钟的监控结果作为情感判断依据；
 
-static const int window = 6;// 因为app 每10s发送一个监控内容，默认取一分钟的监控结果作为情感判断依据；
-
+int32_t A_B_S(int32_t a, int32_t b)
+{
+	return a > b ? (a - b) : (b - a);
+}
 
 /* From WmfDecBytesPerFrame in dec_input_format_tab.cpp */
 const int sizes[] = { 12, 13, 15, 17, 19, 20, 26, 31, 5, 6, 5, 5, 0, 0, 0, 0 };
@@ -32,7 +39,7 @@ Similarity::Similarity()
 Similarity::~Similarity()
 {
 }
-//
+
 //
 int Similarity::loadData(string& dirs)
 {
@@ -46,119 +53,52 @@ int Similarity::loadData(string& dirs)
 	vector<string> fileCry;
 	string dirCry = dirs + "/cry";
 	spaceGary::allFiles(dirCry, fileCry);
+	vector<string> fileSilent;
+	string dirSilent = dirs + "/silent";
+	spaceGary::allFiles(dirSilent, fileSilent);
 
 	wavStruct ws;
-	vector<double> floatOut_new;
+
+    WaveFunction* a=new WaveFunction(128,13);//每帧多少个采样点，MFCC参数的维数
+	vector<vector<float> > mfccs;
 	for(int i = 0; i < fileSmile.size(); i++)
 	{
 		string file = "data/smile/" + fileSmile[i];
 		_INFO("file in dir<smile> : %s", file.c_str());
-		vector<double> floatOut;
-		vector<string> data;
-		int32_t size;
-		
+
 		_INFO("BEGIN TO PROCESS FILE");
-		if(ws.readWav(file, data, floatOut, size) == -1)
-		{
-			_ERROR("Fail to read file: %s", file.c_str());
-			return -1;
-		}
-		int32_t begin;
-		int32_t end;
-		if(ws.postProcessingFloatSequence(floatOut, begin, end, size, floatOut_new) == -1)
-			return -1;
-		if((double)floatOut_new.size()/(double)floatOut.size() < 0.2)// 静音,忽略
-			continue;
-		dataFloatSmile.push_back(floatOut_new);
+		mfccs.clear();
+    	mfccs = a->getMFCCs(file);
+		dataFloatSmile.push_back(mfccs);
 	}
+
 	for(int i = 0; i < fileCry.size(); i++)
 	{
 		string file = "data/cry/" + fileCry[i];
-		_INFO("file in dir<smile> : %s", file.c_str());
-		vector<double> floatOut;
-		vector<string> data;
-		int32_t size;
+		_INFO("file in dir<cry> : %s", file.c_str());
 		
 		_INFO("BEGIN TO PROCESS FILE");
-		if(ws.readWav(file, data, floatOut, size) == -1)
-		{
-			_ERROR("Fail to read file: %s", file.c_str());
-			return -1;
-		}
-		int32_t begin;
-		int32_t end;
-		if(ws.postProcessingFloatSequence(floatOut, begin, end, size, floatOut_new) == -1)
-			return -1;
-		if((double)floatOut_new.size()/(double)floatOut.size() < 0.2)// 静音，忽略
-			continue;
-		dataFloatCry.push_back(floatOut_new);
+		
+		mfccs.clear();
+    	mfccs = a->getMFCCs(file);
+		dataFloatCry.push_back(mfccs);
 	}
 
-	return 0;
-}
-int Similarity::amr2wavOp(string& filename)
-{
-	DecodeAmr *decodeAmr = new DecodeAmr();
-	if(decodeAmr->amr2wav(filename) == -1)
+	// Silent Loading
+	for(int i = 0; i < fileSilent.size(); i++)
 	{
-		_ERROR("Fail to convert amr 2 wav format.");
-		return -1;
+		string file = "data/silent/" + fileSilent[i];
+		_INFO("file in dir<silent> : %s", file.c_str());
+		
+		_INFO("BEGIN TO PROCESS FILE");
+		mfccs.clear();
+    	mfccs = a->getMFCCs(file);
+		dataFloatSilent.push_back(mfccs);
 	}
-	return 0;
-}
-
-int Similarity::readAmr2int16(string& filename, string& speechLine) {
-
-	FILE* in = fopen(filename.c_str(), "rb");
-	if (!in) {
-		_ERROR("Fail to open file < %s >" ,filename.c_str());
-		return -1;
-	}
-	char header[6];
-	int n = fread(header, 1, 6, in);
-	if (n != 6 || memcmp(header, "#!AMR\n", 6)) {
-		_ERROR("Bad header, amr2wav FAILS.");
-		return 1;
-	}
-	//cout << "header : " << header << endl;
-
 	
-	void* amr = Decoder_Interface_init();
-	string content = "";
-	stringstream os;
-	os.str("");
-	while (true) {
-		uint8_t buffer[500];
-		/* Read the mode byte */
-		n = fread(buffer, 1, 1, in);
-		if (n <= 0)
-			break;
-		//cout << "buffer : " << buffer << endl;
-		/* Find the packet size */
-		int size = sizes[(buffer[0] >> 3) & 0x0f];
-		if (size <= 0)
-			break;
-		n = fread(buffer + 1, 1, size, in);
-		//cout << "buffer + 1 : " << buffer + 1 << endl;
-
-		if (n != size)
-			break;
-
-		/* Decode the packet */
-		int16_t outbuffer[160];
-		Decoder_Interface_Decode(amr, buffer, outbuffer, 0);
-		//cout << "outbuffer: " << endl;
-		for (int i = 0; i < 160; i++) 
-		{
-			os << outbuffer[i] << "\t";
-			//cout << outbuffer[i];
-		}
-		os << "##_##";
-	}
-	speechLine = os.str();
-	cout << speechLine << endl; 
-	fclose(in);
-	Decoder_Interface_exit(amr);
+	_INFO("SIZE OF dataFloatSmile : %d", dataFloatSmile.size());
+	_INFO("SIZE OF dataFloatCry : %d", dataFloatCry.size());
+	_INFO("SIZE OF dataFloatSilent : %d", dataFloatSilent.size());
 	return 0;
 }
 
@@ -169,6 +109,8 @@ int Similarity::readint16toWav(string path, string& line) {
 	/* Convert to little endian and write to wav */
 	vector<string> vec;
 	spaceGary::StringSplit(line, vec, "##_##");
+	if(vec.size() == 0)
+		return -1;
 	for (int i = 0; i < vec.size() - 1; i++)
 	{
 		vector<string> vv;
@@ -194,230 +136,127 @@ int Similarity::readint16toWav(string path, string& line) {
 	return 0;
 }
 
-//int Similarity::JudgeEmotion(string& sequence, string& emotion)
-//{
-//	ofstream outputfile;
-//	outputfile.open("sequencefile.txt",ios::out);
-//	outputfile << sequence;
-//	outputfile.close();
-//
-//	vector<string> vec;
-//	//spaceGary::StringSplit(sequence, vec, " ");
-//}
-
 int Similarity::CalSimilarity(string& file1, string& emotion)
 {
-	vector<double> float1;
-	vector<string> data1;
-	unsigned long size1;
+	vector<vector<float> > float1;
 	
-	wavStruct ws;
 	_INFO("BEGIN TO PROCESS FILE1");
-	if(ws.readWav(file1, data1, float1, size1) == -1)
-	{
-		_ERROR("Fail to read file1: %s", file1.c_str());
-		return -1;
-	}
 	_INFO("BEGIN TO PROCESS SIMILARITY.");
-	
-	// Silent
-	int32_t zeroWav = 0;
-	for(int32_t i = 0; i < float1.size(); i++)
-	{
-		if(float1[i] == 0)
-			zeroWav ++;
-	}
-	if((double)zeroWav/(double)float1.size() > 0.8)
-	{
-		emotion = "silent";
-		return 0;
-	}
-//	EditDist ed;
-//	_INFO("SIZE OF DATA1: %lld", data1.size());
-//	_INFO("SIZE OF DATA2: %lld", data2.size());
-//	int dis = ed.edit(data1,data2);
-//	_INFO("Distance of 1 and 2 = %lld", dis);
 
-	// vector distance
-	//cout << float1.size()<< endl;
-//	_INFO("SIZE OF FLOAT1 : lld%", float1.size());
-//	double dist = 0;
-//	for(unsigned long i = 0; i < float1.size(); i ++)
-//	{
-//		dist += float1[i]>float2[i]?(float1[i] - float2[i]):(float2[i]-float1[i]);
-//	}
-//	dist = dist/(double)float1.size();
-	int32_t begin1, end1;
-	int32_t size_1;
+    WaveFunction* a=new WaveFunction(128,13);//每帧多少个采样点，MFCC参数的维数
+	vector<vector<float> > mfccs;
+   	mfccs = a->getMFCCs(file1);
+
 	_INFO("Processing float1 ...");
-	vector<double> float1_new;
-	if(ws.postProcessingFloatSequence(float1, begin1, end1, size_1, float1_new) == -1)
-		return -1;
-	// test
-//	for(int i = begin1; i < end1; i++)
-//	{
-//		cout << "---" << float1[i] << endl;
-//	}
-//	cout << "====================" << endl;
-//	for(int i = begin2; i < end2; i++)
-//	{
-//		cout << "---" << float2[i] <<endl;
-//	}
-//
-
-//	for(int i = begin1; i < MIN(begin1+1000,end1); i++)
-//	{
-//		cout << "---" << float1[i] << endl;
-//	}
-//	cout << "====================" << endl;
-//	for(int i = begin2; i < MIN(begin2 + 1000,end2); i++)
-//	{
-//		cout << "---" << float2[i] <<endl;
-//	}
-//	return 0;
-	// DTW
-	DTW_ dtw;
-	_INFO("Make DTWDistanceFun ...");
-	int32_t step = 100;
-	double distSmile = 0.0;
-	for(int i = 0; i < dataFloatSmile.size(); i++)
+	// smile
+	double distSmile = BIGDIST;
+	for(int i = 0; i < MIN(5,dataFloatSmile.size()); i++) 
 	{
-		_INFO("SMILE : Size of database float vector : %d, and Size of input voice float vector : %d", dataFloatSmile[i].size(), float1_new.size());
-		double d = dtw.DTWDistanceFun(dataFloatSmile[i], float1_new,step/30);
-		distSmile += d;
+		float d = a->ComputeDTW(mfccs, dataFloatSmile[i]);
+		//d *= 1000.0;
+		d *= (double)(A_B_S(mfccs.size() , dataFloatSmile[i].size()) + 1);
+		_INFO("d of Smile = %d", d);//A_B_S(mfccs.size(), dataFloatSmile[i].size()));
+		//d /=(double)(A_B_S(mfccs.size(), dataFloatSmile[i].size()) + 1);
+		d /= (double)(mfccs.size() + dataFloatCry[i].size());
+		if(d < distSmile)
+			distSmile = d;
+		_INFO("distSmile = %f, abs = %d", distSmile, A_B_S(mfccs.size(), dataFloatSmile[i].size()) + 1);
 	}
-	distSmile /= (double)dataFloatSmile.size();
-
-	double distCry = 0.0;
-	for(int i = 0; i < dataFloatCry.size(); i++)
+	_INFO("distSmile = %f", distSmile);
+	// cry
+	double distCry = BIGDIST;
+	_INFO("size of input mfccs : %d", mfccs.size());
+	for(int i = 0; i < MIN(5,dataFloatCry.size()); i++) 
 	{
-		_INFO("CRY : Size of database float vector : %d, and Size of input voice float vector : %d", dataFloatSmile[i].size(), float1_new.size());
-		double d = dtw.DTWDistanceFun(dataFloatCry[i], float1_new,step/30);
-		distCry += d;
+		_INFO("size of dababase mfccs : %d", dataFloatCry[i].size());
+		float d = a->ComputeDTW(mfccs, dataFloatCry[i]);
+		_INFO("d of Cry = %d", d);//A_B_S(mfccs.size(), dataFloatCry[i].size()));
+		d *= (double)(A_B_S(mfccs.size() , dataFloatCry[i].size()) + 1);
+		d /= (double)(mfccs.size() + dataFloatCry[i].size());
+		cerr << d << " / " << (A_B_S(mfccs.size() , dataFloatCry[i].size()) + 1) << " = " << d << endl;
+		if(d < distCry)
+			distCry = d;
+		_INFO("distCry = %f, abs = %d", distCry, A_B_S(mfccs.size() , dataFloatCry[i].size()) + 1);
+
 	}
-	distCry /= (double)dataFloatCry.size();
+	_INFO("distCry = %f", distCry);
+
+	// silent
+	double distSilent = BIGDIST;
+	for(int i = 0; i < MIN(5,dataFloatSilent.size()); i++) 
+	{
+		float d = a->ComputeDTW(mfccs, dataFloatSilent[i]);
+		d *= (double)(A_B_S(mfccs.size() , dataFloatSilent[i].size()) + 1);
+		//d *= 1000.0;
+		_INFO("d of Silent = %d", d);//A_B_S(mfccs.size() , dataFloatSilent[i].size()));
+		//d /=(double)(A_B_S(mfccs.size() , dataFloatSilent[i].size())+1);
+		//d /= (double)(mfccs.size() + dataFloatSilent[i].size());
+		if(d < distSilent)
+			distSilent = d;
+		distSilent *= 2.5;
+		_INFO("distSilent = %f ", distSilent);
+		//_INFO("distSilent = %f, abs = %d", distSilent, A_B_S(mfccs.size() , dataFloatSilent[i].size())+1);
+	}
+	_INFO("distSilent = %f", distSilent);
 
 	_INFO("Dist from  SMILE = %f" , distSmile);
 	_INFO("Dist from  CRY = %f" , distCry);
+	_INFO("Dist from  SILENT = %f" , distSilent);
 
-	emotion = "silent";	// 默认为 silent
 	if(distCry > distSmile)
 		emotion = "smile";
 	else if(distSmile > distCry)
 		emotion = "cry";
 
+	if(distSmile >= distSilent && distCry >= distSilent )
+		emotion = "silent";
+
 	_INFO("emotionQueue.size : %d", emotionQueue.size());
-	_INFO("Cry= %d", cry);
+	_INFO("Cry = %d", cry);
 	_INFO("Smile = %d", smile);
 	_INFO("Silent = %d", silent);
 	
 	// 情感队列
-	if(emotionQueue.empty() || emotionQueue.size() < window)	// 若监控内容不足window 个，则直接返回silent;
-	{
-		emotionQueue.push(emotion);
-		if(emotion == "cry")
-			cry++;
-		else if(emotion == "smile")
-			smile ++;
-		else if(emotion == "silent")
-			silent ++;
-
-		emotion = "silent";
-		return 0;
-	}else
-	{
-		string front = emotionQueue.front();
-		if(front == "cry")
-			cry --;
-		else if(front == "smile")
-			smile --;
-		else if(front == "silent")
-			silent --;
-		emotionQueue.pop();
-		
-		if(emotion == "cry")
-			cry ++;
-		else if(emotion == "smile")
-			smile ++;
-		else if(emotion == "silent")
-			silent ++;
-		
-		emotionQueue.push(emotion);
-	}
-
-	if((double)cry/(double)window >= 0.4)
-		emotion = "cry";
-	else if((double)smile/(double)window >= 0.4)
-		emotion = "smile";
-	else if((double)silent/(double)window >= 0.4)
-		emotion = "silent";
-	//int32_t step1 = size_1/step;
-	//int32_t step2 = size_2/step;
-	//int32_t b1,e1,b2,e2;
-	//for(int32_t i = 0; i < step; i ++)
-	//{
-	//	b1 = begin1 + step1*i;
-	//	//e1 = begin1 + step1*(i+1);
-	//	e1 = begin1 + 10000;
-	//	b2 = begin2 + step2*i;
-	//	//e2 = begin2 + step2*(i+2);
-	//	e2 = begin2 + 10000;
-	//	if(e1 > end1 || e2 > end2)
-	//	{
-	//		break;
-	//	}
-	//	double d = dtw.DTWDistanceFun(float1,b1, e1, float2, b2, e2, step/30);
-	//	dist += d;
-	//	break;
-
-	//}
-	
-//	int32_t b1 = begin1;
-//	int32_t e1 = end1;//MIN(end1, begin1+ 10000);
-//	int32_t b2 = begin2;
-//	int32_t e2 = end2;//MIN(end2, begin2+ 10000);
+//	if(emotionQueue.empty() || emotionQueue.size() < window)	// 若监控内容不足window 个，则直接返回silent;
+//	{
+//		emotionQueue.push(emotion);
+//		if(emotion == "cry")
+//			cry++;
+//		else if(emotion == "smile")
+//			smile ++;
+//		else if(emotion == "silent")
+//			silent ++;
 //
-//	double d = dtw.DTWDistanceFun(float1,b1,e1, float2, b2, e2, 30);
-	//_INFO("AVG dist = %f", dist*1000);
+//		emotion = "silent";
+//		return 0;
+//	}else
+//	{
+//		string front = emotionQueue.front();
+//		if(front == "cry")
+//			cry --;
+//		else if(front == "smile")
+//			smile --;
+//		else if(front == "silent")
+//			silent --;
+//		emotionQueue.pop();
+//		
+//		if(emotion == "cry")
+//			cry ++;
+//		else if(emotion == "smile")
+//			smile ++;
+//		else if(emotion == "silent")
+//			silent ++;
+//		
+//		emotionQueue.push(emotion);
+//	}
 
+//	if((double)cry/(double)window >= 0.4)
+//		emotion = "cry";
+//	else if((double)smile/(double)window >= 0.4)
+//		emotion = "smile";
+//	else if((double)silent/(double)window >= 0.4)
+//		emotion = "silent";
 	return 0;
 }
-
-//int main(int argc, char** argv)
-//{
-//	if(argc != 2)
-//	{
-//		_ERROR("Please input 2 files.");
-//		return -1;
-//	}
-//
-//	string file1 = argv[1];
-//
-//	Similarity sim;
-//	string dataPath = "./data";
-//	_INFO("Begin to load voice database...");
-//	sim.loadData(dataPath);
-//	_INFO("Over loading voice database...");
-//	_INFO("...");
-//	_INFO("...");
-//	_INFO("...");
-//	if(sim.amr2wavOp(file1) == -1)
-//	{
-//		return -1;
-//	}
-//	string fileAmr1 = file1 + ".wav";
-//	string emotion;
-//	if(sim.CalSimilarity(fileAmr1, emotion) == -1)
-//	{
-//		return -1;
-//	}
-//	_INFO("Emotion : %s" , emotion);
-//
-//
-//	return 0;
-//}
-
-
-
 
 
