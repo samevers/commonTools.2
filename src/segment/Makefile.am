@@ -20,7 +20,7 @@ wordSegment_CPPFLAGS=$(AM_CPPFLAGS)
 
 
 
-lib_LTLIBRARIES=libSegment.la
+lib_LTLIBRARIES+=libSegment.la
 libSegment_la_SOURCES=Segment.cpp WordSegmentor.cpp GraphSegmentor.cpp
 libSegment_la_LIBADD=-lm -lpthread -lssplatform -lencoding -ldicmap -lCoreSegmentor -lIQSegmentor
 AM_CPPFLAGS+= -I../include
