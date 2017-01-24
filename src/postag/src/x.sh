@@ -1,0 +1,15 @@
+sh post.sh DictTrie.hpp
+sh post.sh FullSegment.hpp
+sh post.sh HMMModel.hpp
+sh post.sh HMMSegment.hpp
+sh post.sh Jb.hpp
+sh post.sh KeywordExtractor.hpp
+sh post.sh LevelSegment.hpp
+sh post.sh MixSegment.hpp
+sh post.sh MPSegment.hpp
+sh post.sh PosTagger.hpp
+sh post.sh PreFilter.hpp
+sh post.sh QuerySegment.hpp
+sh post.sh SegmentBase.hpp
+sh post.sh TransCode.hpp
+sh post.sh Trie.hpp

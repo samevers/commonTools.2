@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/configure.ac
+END
+acsite.m4
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/acsite.m4
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/Makefile.am
+END
+collect.mk
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/collect.mk
+END
+aclocal.m4
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/aclocal.m4
+END
+common.mk
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/common.mk
+END

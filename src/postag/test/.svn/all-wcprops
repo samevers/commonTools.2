@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test
+END
+load_test.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/load_test.cpp
+END
+x.sh
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/x.sh
+END
+string_Util.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/string_Util.cpp
+END
+demo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/demo.cpp
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/Makefile.am
+END
+a.sh
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/a.sh
+END
+string_Util.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/string_Util.h
+END
+post.sh
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/websearch4/!svn/ver/463981/VH/postag/tags/postag.20160215.b/test/post.sh
+END
