@@ -12,6 +12,8 @@
 #include "twsetypedef.h"
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <dirent.h>  
 #include "../service_log.hpp"
 namespace spaceGary
 {
@@ -86,16 +88,14 @@ int open_f(std::string filename, std::ifstream& infile)
 {
 	if(filename.length() == 0)
 	{
-		//std::cerr << "ERROR: input file name is NULL....... FALSE !" << std::endl;
-		_INFO("ERROR: input file name is NULL....... FALSE !");
+		std::cerr << "ERROR: input file name is NULL....... FALSE !" << std::endl;
 		return -1;
 	}
 
 	infile.open(filename.c_str(), std::ios::in);
 	if(!infile)
 	{
-		//std::cerr << "ERROR: fail to open input file, please check the file is real !" << std::endl;
-		_INFO("ERROR: fail to open input file, please check the file is real !");
+		std::cerr << "ERROR: fail to open input file, please check the file is real !" << std::endl;
 		return -1;
 	}
 
@@ -110,19 +110,48 @@ int Build_f(std::string filename, std::ofstream& outfile)
 {
 	if(filename.length() == 0)
 	{
-		_INFO("ERROR: output file name is NUL !");
+		std::cerr << "ERROR: output file name is NULL !" << std::endl;
 		return -1;
 	}
 
 	outfile.open(filename.c_str(), std::ios::out);
 	if(!outfile)
 	{
-		_INFO("ERROR: fail to build output file, please check !");
+		std::cerr << "ERROR: fail to build output file, please check !" << std::endl;
 		return -1;
 	}
 
 	return 0;
 }
+
+
+int allFiles(std::string& PATH, std::vector<std::string>& files)  
+{  
+    struct dirent *ptr;      
+    DIR *dir;  
+    dir=opendir(PATH.c_str());   
+	if(dir == NULL)
+	{
+		_ERROR("Fail to open dir %s", PATH.c_str());
+		return -1;
+	}
+    while((ptr=readdir(dir))!=NULL)  
+    {  
+        //跳过'.'和'..'两个目录  
+        if(ptr->d_name[0] == '.')  
+            continue;  
+        //cout << ptr->d_name << endl;  
+        files.push_back(ptr->d_name);  
+    }  
+      
+    //for (int i = 0; i < files.size(); ++i)  
+    //{  
+    //    cout << files[i] << endl;  
+    //}  
+  
+    closedir(dir);  
+    return 0;  
+}  
 
 }; //end space
 

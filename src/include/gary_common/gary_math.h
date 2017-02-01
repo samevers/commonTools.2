@@ -37,7 +37,12 @@ T GMin(T t1, T t2)
 		return t2;
 	}
 }
-
+template <typename T>
+inline 
+T GAbs_(T t1, T t2)
+{
+	return t1 < t2 ? t2 - t1 : t1 - t2;
+}
 };
 
 #endif
