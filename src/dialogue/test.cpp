@@ -2,13 +2,18 @@
 using namespace std;
 
 const char* TEACHER_FILE = "../../data/LearnDlg/learn.log";
+const static string DA_IndexFile_DLG = "../../data/index_dir/knowledge.da.index";
+const static string DOC_IndexFile_DLG = "../../data/index_dir/knowledge.doc.index";
+
 
 const char* dir_path = "../../";
 int main(int arg, char** argv)
 {
 	DIALOGUE dlg;
 	cerr << "[INFO] Begin to Init dlg" << endl;
-	if(dlg.Init(dir_path) == -1)
+	string docFile = DOC_IndexFile_DLG;
+	string daFile = DA_IndexFile_DLG;
+	if(dlg.Init(dir_path,docFile, daFile) == -1)
 	{
 		cerr << "[ERROR] Fail to dlg.init()" << endl;
 		return -1;

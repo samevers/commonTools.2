@@ -7,7 +7,7 @@
 #include "../index/inv_index/doc_index.h"
 #include "Doc_Search.h"
 #include "Da_Search.h"
-
+#include "../include/service_log.hpp"
 using namespace WHITE_BLACK_DA;
 
 class DIALOGUE{
@@ -15,7 +15,8 @@ public:
 	DIALOGUE();
 	~DIALOGUE();
 
-	int Init(const char* dir_base);
+	//int Init(const char* dir_base);
+	int Init(const char* dir_base,  string& DOC_IndexFile_DLG, string& DA_IndexFile_DLG); // data directory
 	int Release();
 	int Normalize_(const char* query);
 	int IndexOutcome(const char* query);//, std::ofstream& FILE_TEACHER);

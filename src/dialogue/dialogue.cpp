@@ -3,14 +3,9 @@
 #include <stdlib.h>
 using namespace std;
 
-//const static string DA_IndexFile_DLG = "index_dir/qqchat.data.da.Index";
-//const static string DOC_IndexFile_DLG = "index_dir/qqchat.data.doc.Index";
-//const static string DA_IndexFile_DLG = "index_dir/da.Index";
-//const static string DOC_IndexFile_DLG = "index_dir/doc.Index";
-//const string DA_IndexFile_DLG = "index_dir/singer.txt.da.Index";
-//const string  DOC_IndexFile_DLG = "index_dir/sogou.query.post.doc.Index";
-const static string DA_IndexFile_DLG = "index_dir/dlg.da.index";
-const static string DOC_IndexFile_DLG = "index_dir/dlg.doc.index";
+//const static string DA_IndexFile_DLG = "../../data/index_dir/knowledge.da.index";
+//const static string DOC_IndexFile_DLG = "../../data/index_dir/knowledge.doc.index";
+
 
 const static string FILE_PUNC = "punc/punc.txt";
 const static int threshold = 50;			// data[i].length()/query.length()，太大的话，表示查找失败；
@@ -32,7 +27,7 @@ int DIALOGUE::loadDic(const char* dir_base)
 	// load punc dict
 	ifstream infile;
 	string puncFilePath = string(dir_base) + "/data/" + FILE_PUNC;
-	cerr << "[INFO] path of punc.txt: "<<puncFilePath << endl;
+	_INFO("[INFO] path of punc.txt: %s", puncFilePath.c_str());
 	infile.open(puncFilePath.c_str(), ios::in);
 	if(!infile)
 	{
@@ -53,21 +48,15 @@ int DIALOGUE::loadDic(const char* dir_base)
 	
 	return 0;
 }
-int DIALOGUE::Init(const char* dir_base) // data directory
+int DIALOGUE::Init(const char* dir_base, string& DOC_IndexFile_DLG, string& DA_IndexFile_DLG) // data directory
 {
 	// Init dlg da and docs index
-	//doc_search.Init(dir_base);
-	string data_path = string(dir_base) + "data/";
-	string index_file = data_path + "/" + DOC_IndexFile_DLG;
+	string index_file = DOC_IndexFile_DLG;
+	cerr << "[dialogue.cpp] [Init] doc_index file : " << DOC_IndexFile_DLG << endl;
 	doc_search.Init(index_file.c_str());
-	/*{
-		cerr << "[ERROR] Fail to load index file!" << endl;
-		return -1;
-	}*/
-
+	
 	// da_index
-	data_path = string(dir_base) + "data/";
-	index_file = data_path + "/" + DA_IndexFile_DLG;
+	index_file =  DA_IndexFile_DLG;
 	cerr << "[dialogue.cpp] [Init] da_index file : " << index_file << endl;
 	if(da_index->Init(index_file.c_str()) == -1)
 	{
