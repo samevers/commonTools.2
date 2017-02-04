@@ -14,6 +14,7 @@ class DA_SEARCH{
 		DA_SEARCH();
 		~DA_SEARCH();
 
+		//int32_t Init(const char* dir_base, Darts::DoubleArray* Da_Index);
 		int32_t Init(const char* dir_base);
 		int32_t Release();
 		int32_t Release_();

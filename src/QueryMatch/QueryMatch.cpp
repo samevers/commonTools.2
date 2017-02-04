@@ -9,6 +9,7 @@
 #include <regex.h>
 #include <boost/regex.hpp>
 #include <boost/exception/all.hpp>
+#include "../include/service_log.hpp"
 
 #define DEBUG_ON 0
 #define debug_sam 1
@@ -21,7 +22,7 @@ const static int MAXSTRLEN=1024;
 const static int MAXQUERYLEN=40;
 //const static int MAXSBIT=64;
 
-const static string QUERYMATCH_DIR = "./data/base/querymatch";
+//const static string QUERYMATCH_DIR = "../../data/base/querymatch";
 const static string ALL_WORDLIST_FILE="vrqo_VRwordlist";// queryMatch 所有词典文件
 const static string ALL_RULE_FILE="vrqo.rule";
 const static string NUMBER_REG_FILE="number.reg";
@@ -62,7 +63,7 @@ QueryMatch::~QueryMatch(){
 
 }
 
-bool QueryMatch::open(const char *allWordlist)
+bool QueryMatch::open(const char *QUERYMATCH_DIR)
 {
 	bool ret;
 	ostringstream oss;
@@ -73,8 +74,10 @@ bool QueryMatch::open(const char *allWordlist)
 	ret = loadRegexPattern(regFile.c_str(), numreg); // number.reg
 	if (!ret)
 	{
+		cerr << "------1" << endl;
 		return false;
 	}
+	cerr << "------11" << endl;
 	oss.clear();
 	oss.str("");
 	oss <<QUERYMATCH_DIR << "/" << NUMBER_EXPRESS_REG_FILE; 
@@ -82,8 +85,10 @@ bool QueryMatch::open(const char *allWordlist)
 	ret = loadRegexPattern(regFile.c_str(), expressNumreg);// expressnumber.reg
 	if (!ret)
 	{
+		cerr << "------2" << endl;
 		return false;
 	}
+	cerr << "------22" << endl;
 	oss.clear();
 	oss.str("");
 	oss <<QUERYMATCH_DIR << "/" << NUMBER_PHONE_REG_FILE; 
@@ -91,16 +96,21 @@ bool QueryMatch::open(const char *allWordlist)
 	ret = loadRegexPattern(regFile.c_str(), phoneNumreg);// phoneNumber.reg
 	if (!ret)
 	{
+		cerr << "------3" << endl;
 		return false;
 	}
+	cerr << "------33" << endl;
 	oss.clear();
 	oss.str("");
-	ret = LoadWordList(allWordlist);// load word files.
+	ret = LoadWordList(QUERYMATCH_DIR);// load word files.
 	if (!ret)
 	{
 		cerr << "load base dic failed!" << endl;
+		cerr << "------4" << endl;
 		return false;
 	}
+	cerr << "------44" << endl;
+	cerr << "[debug_sam] querymatch open() OK" << endl;
 	return true;
 }
 
@@ -135,7 +145,7 @@ bool QueryMatch::loadRegexPattern(const char* filename, string& regexString) {
 
 }
 
-bool QueryMatch::LoadWordList(const char *allWordlist)
+bool QueryMatch::LoadWordList(const char *QUERYMATCH_DIR)
 {
 	ostringstream oss;
 	oss.str("");
@@ -167,6 +177,7 @@ bool QueryMatch::LoadWordList(const char *allWordlist)
 		oss << QUERYMATCH_DIR << "/" << line;
 		string oneFilename;
 		oneFilename = oss.str().c_str();
+		_INFO("open file:%s", oneFilename.c_str());
 		std::ifstream finOne(oneFilename.c_str());// 顺序打开*.word 文件
 		if(!finOne)
 		{
@@ -176,6 +187,7 @@ bool QueryMatch::LoadWordList(const char *allWordlist)
 		{
 			string keyLine;
 			while(getline(finOne, keyLine)){
+				_INFO("LINE : %s" , keyLine.c_str());
 				trim(keyLine);
 				string::size_type pos = keyLine.find_first_of('\t');
 				if(string::npos == pos){	// *.word 词表里没有\t 的部分
@@ -202,6 +214,7 @@ bool QueryMatch::LoadWordList(const char *allWordlist)
 					{
 						string keyword = tagShowVec[i];
 						trim(keyword);
+						cerr << "keyword:"<<keyword << endl;
 						if(!bj2qj(keyword))
 						{
 							continue;
@@ -233,7 +246,7 @@ bool QueryMatch::LoadWordList(const char *allWordlist)
 						key_word_tag[index] = tempStr;		// key_word_tag
 						index = index + 1;
 					}
-
+					cerr << "keyword2:"<<keyword << endl;
 					if(!bj2qj(keyword))
 					{
 						continue;
@@ -340,7 +353,7 @@ bool QueryMatch::MakeTrie(map<string, bitset<MAXSBIT> > &keyMapBitTmp)// keyMapB
 	return true;
 }
 
-bool QueryMatch::classifyQuery(const char *oriQuery, const char* query, int querylen, vector<ResultData> &vecType, long long request_id, analysis::QuerySegmentor *wordseg , analysis::TGraph *annseg, int modeFlag)
+bool QueryMatch::classifyQuery(const char *oriQuery, const char* query, int querylen, vector<ResultData> &vecType, long long request_id, SEGMENT_1* wordSeg, int modeFlag)
 {
 	
 	if(!query || querylen < 1 || querylen > MAXQUERYLEN){return false;}
@@ -582,7 +595,7 @@ bool QueryMatch::classifyQuery(const char *oriQuery, const char* query, int quer
 	else
 	{
 		vector<string> termList;
-		segmentor->Segment(wordseg, buffer, request, parsed, termList);
+		wordSeg->Segment_(buffer, termList);
 		vector<string>::iterator it;
 		for (it = termList.begin(); it != termList.end(); it++)
 		{

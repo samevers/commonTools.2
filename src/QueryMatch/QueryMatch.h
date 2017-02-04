@@ -28,8 +28,9 @@
 #include <ext/hash_map>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "../vr_data_engine/include/darts.h"
+#include "../include/darts.h"
 #include "WordListSignle.h"
+#include "../segment/Segment.h"
 
 using std::string;
 
@@ -82,7 +83,7 @@ public:
 	
 	bool open(const char *dataPrefix="");
 	static void releaseInstance();
-	bool classifyQuery(const char *oriQuery,const char* query, int querylen, vector<ResultData> &vecType, long long request_id, analysis::QuerySegmentor *wordseg ,analysis::TGraph *annseg, int modeFlag=0);
+	bool classifyQuery(const char *oriQuery,const char* query, int querylen, vector<ResultData> &vecType, long long request_id, SEGMENT_1* wordseg, int modeFlag=0);
 	~QueryMatch();
 private:
 	QueryMatch();

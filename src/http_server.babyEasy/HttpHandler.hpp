@@ -7,7 +7,6 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <sys/time.h>
 #include "../speechProcessing/similarity.h"
 //#include "Da_Search.h"
 //#include "Doc_Search.h"
@@ -30,19 +29,10 @@ class HttpHandler
         virtual int handle_worker(Worker* worker);
 
 		int32_t generate_json_result(
-				std::string & json_result, int babyStatus, string& fromObject, string& listen);
+				std::string & json_result, std::string& emotion);
 
 	public:
 		Similarity *sim;
-		int babyStatus;
-		int babyStatusNum;
-		string  command;
-		string motherAudio;
-		string babyVoice;
-		int code;
-
-		timeval lastCommandTime;
-		timeval curCommandTime;
     protected:
         Http_Server* m_server;
         virtual int generate_response(Worker* worker);

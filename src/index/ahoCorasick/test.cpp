@@ -138,7 +138,8 @@ int main(int argc, char ** argv)
 	string strkeyword;
 	std::vector<std::pair<unsigned, int> > wordIndex;
 	std::vector<std::pair<int, int> > posIndex; 
-	while(getline(infile,line))
+	//while(getline(infile,line))
+	while(getline(cin,line))
 	{
 		_INFO("line= %s", line.c_str());
 		TrimPunctuation(line, strkeyword);
@@ -163,19 +164,35 @@ int main(int argc, char ** argv)
 			author = "";
 			cerr << "[debug_sam] 1 Cannot find an author:" << line << endl;
 			continue;
-		} else { //作者只取一个
-			int beg = posIndex[0].first;
-			int end = posIndex[0].second;
-			if (beg >= 0 && end >= beg) {
-				author = line.substr(beg, end - beg);
-				cerr << "[debug_sam] author = " << author << endl;
+		} else { //给出一个包含若干个作者的query，找出里面包含的所有作者。
+			for(int i = 0; i < posIndex.size(); i++)
+			{
+				int beg = posIndex[i].first;
+				int end = posIndex[i].second;
+				if (beg >= 0 && end >= beg) {
+					author = line.substr(beg, end - beg);
+					cerr << "[debug_sam] author = " << author << endl;
+				}
+				std::map<std::string, double>::iterator it = novel_author.find(author);
+				if (author.size() == 0 || it == novel_author.end()) {
+					fprintf(stderr, "find author error [%s] %d %d\n", author.c_str(), beg, end);
+					author = "";
+					continue;
+				} 
+
 			}
-			std::map<std::string, double>::iterator it = novel_author.find(author);
-			if (author.size() == 0 || it == novel_author.end()) {
-				fprintf(stderr, "find author error [%s] %d %d\n", author.c_str(), beg, end);
-				author = "";
-				continue;
-			} 
+//			int beg = posIndex[0].first;
+//			int end = posIndex[0].second;
+//			if (beg >= 0 && end >= beg) {
+//				author = line.substr(beg, end - beg);
+//				cerr << "[debug_sam] author = " << author << endl;
+//			}
+//			std::map<std::string, double>::iterator it = novel_author.find(author);
+//			if (author.size() == 0 || it == novel_author.end()) {
+//				fprintf(stderr, "find author error [%s] %d %d\n", author.c_str(), beg, end);
+//				author = "";
+//				continue;
+//			} 
 		}
 	}
 	infile.close();

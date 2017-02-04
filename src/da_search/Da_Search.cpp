@@ -30,24 +30,27 @@ DA_SEARCH::~DA_SEARCH()
 
 int32_t DA_SEARCH::LoadDAs(const char* dir_base)
 {
+	_INFO("Begin to LoadIndex: %s", dir_base);
 	DaSearch = new Darts::DoubleArray();
+	cerr << "----------1" << endl;
 	WhiteBlackList_ da;
-	cerr << "[INFO] Begin to LoadIndex: " << dir_base << endl;
 
 	string Index_path;
 	Index_path = dir_base;
 	if(da.LoadIndex(Index_path.c_str(), DaSearch, Search_Buf, Search_Buf_begin_end_len) == -1)
 	{
-		cerr << "[ERROR] Fail to load Singer_Buf index file!" << endl;
+		_ERROR("Fail to load Singer_Buf index file!");
 		return -1;
 	}
-	cerr << "[INFO] LoadIndex() is OK" << endl;
+	_INFO("LoadIndex() is OK");
 
 	return 0;
 }
+//int32_t DA_SEARCH::Init(const char* dict_base, Darts::DoubleArray* Da_Index)
 int32_t DA_SEARCH::Init(const char* dict_base)
 {
-	cerr << "[INFO] Begin to loadDAs: " << dict_base << endl;
+	_INFO("Begin to loadDAs: %s", dict_base);
+	//DaSearch = Da_Index;
 	if(LoadDAs(dict_base) == -1)
 	{
 		return -1;
@@ -70,11 +73,11 @@ int32_t DA_SEARCH::Release()
 
 int32_t DA_SEARCH::Release_()
 {
-	if(DaSearch)
-	{
-		delete DaSearch;
-		DaSearch = NULL;
-	}
+//	if(DaSearch)
+//	{
+//		delete DaSearch;
+//		DaSearch = NULL;
+//	}
 	if(Search_Buf)
 	{
 		delete Search_Buf;
@@ -84,7 +87,7 @@ int32_t DA_SEARCH::Release_()
 }
 
 
-int32_t DA_SEARCH::DA_Search(string& dest_norm, map<string,string>& index_text, string& search_key)                                                         
+int32_t DA_SEARCH::DA_Search(string& dest_norm, map<string,string>& index_text, string& search_key) 
 {
     int ret = -1;
 	vector<string> content;

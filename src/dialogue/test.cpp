@@ -2,8 +2,12 @@
 using namespace std;
 
 const char* TEACHER_FILE = "../../data/LearnDlg/learn.log";
-const static string DA_IndexFile_DLG = "../../data/index_dir/knowledge.da.index";
-const static string DOC_IndexFile_DLG = "../../data/index_dir/knowledge.doc.index";
+// 采用docSearch，可以使得用户Query 不受语序的影响。
+const static string Knowledge_DA_IndexFile_DLG = "../../data/index_dir/knowledge.da.index";
+const static string Knowledge_DOC_IndexFile_DLG = "../../data/index_dir/knowledge.doc.index";
+const static string Music_DA_IndexFile_DLG = "../../data/index_dir/music.da.index";
+const static string Music_DOC_IndexFile_DLG = "../../data/index_dir/music.doc.index";
+
 
 
 const char* dir_path = "../../";
@@ -11,8 +15,8 @@ int main(int arg, char** argv)
 {
 	DIALOGUE dlg;
 	cerr << "[INFO] Begin to Init dlg" << endl;
-	string docFile = DOC_IndexFile_DLG;
-	string daFile = DA_IndexFile_DLG;
+	string docFile = Knowledge_DOC_IndexFile_DLG;
+	string daFile = Knowledge_DA_IndexFile_DLG;
 	if(dlg.Init(dir_path,docFile, daFile) == -1)
 	{
 		cerr << "[ERROR] Fail to dlg.init()" << endl;

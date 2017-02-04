@@ -20,9 +20,8 @@ class Similarity{
 		int CalSimilarity(string& file1, std::string& emotion);
 		int JudgeEmotion(string& sequence, string& emotion);
 	public:
-		vector<vector<vector<float> > > dataFloatSmile;
-		vector<vector<vector<float> > > dataFloatCry;
-		vector<vector<vector<float> > > dataFloatSilent;
+		vector<vector<double> > dataFloatSmile;
+		vector<vector<double> > dataFloatCry;
 		queue<string> emotionQueue;
 		int cry;
 		int smile;

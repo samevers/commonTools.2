@@ -1,9 +1,6 @@
 /*dtwrecoge.cpp**************************************************************/
 
 #include "headDTW.h"
-#include "../include/service_log.hpp"
-
-
 #define DTWMAXNUM 2000
 //double distance[DTWMAXNUM][DTWMAXNUM]; /*±£´æ¾àÀë*/
 //double dtwpath[DTWMAXNUM][DTWMAXNUM]; /*±£´æÂ·¾¶*/
@@ -105,11 +102,6 @@ double DTW_::DTWDistanceFun(vector<double>& A, vector<double>& B, int32_t r)
 
 double DTW_::DTWDistanceFun(vector<double>& A, int32_t& begin1, int32_t& end1, vector<double>& B, int32_t& begin2, int32_t& end2, int32_t r)
 {
-	if(A.size() == 0 || B.size() == 0)
-	{
-		_INFO("vector size = 0");
-		return -1;
-	}
 	int32_t I = end1 + 1 - begin1;
 	int32_t J = end2 + 1 - begin2;
 	//cerr << "I = " << I << endl;
