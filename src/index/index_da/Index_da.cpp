@@ -102,7 +102,6 @@ int32_t WhiteBlackList_::MakeIndex(const char *file, const char *index_file)
 		string str_line = line;
 		vector<string> parts_vect;
 		parts_vect.clear();
-		//boost::algorithm::split(parts_vect, str_line, boost::is_any_of( "_$##$_"));
 		split_sam(parts_vect, str_line, blank.c_str());
 		if(parts_vect.size() < 7)
 		{
@@ -192,7 +191,6 @@ int32_t WhiteBlackList_::MakeIndex(const char *file, const char *index_file)
 		{
 			whiteBlackList_vect.push_back(node);			// 最终要进行排序，并进行DA 存储的vector：【whiteBlackList_vect】
 		}
-
 	}
 	//将数据进行转换并输出到index文件中
 	OutputIndexFile(whiteBlackList_vect, index_file);	//	将要进行DA存储的vector输出到索引文件 index_file
@@ -228,10 +226,10 @@ int32_t WhiteBlackList_::OutputIndexFile(
 	sort(WhiteBlackList_vect.begin(), WhiteBlackList_vect.end(),comp2);	// sort
 
 	//进行数据转换
-	vector<const char *> da_key_vect;
-	map<string, uint32_t> da_key_map;
-	vector<int32_t> da_value_vect;
-	vector<char> char_vect;
+	map<string, uint32_t> da_key_map;// [NOTE]: [QUERY] = QUERY order number.
+	vector<const char *> da_key_vect;// [NOTE]: QUERY.
+	vector<int32_t> da_value_vect;	// [NOTE]: QUERY order number.
+	vector<char> char_vect;			// [NOTE]: char vector.
 	vector<int> char_vect_querylen;
 	vector<char> char_vect_vr;
 	vector<char> char_vect_label;
@@ -240,9 +238,10 @@ int32_t WhiteBlackList_::OutputIndexFile(
 	vector<char> char_vect_itemquery;
 	vector<char> char_vect_data;
 	vector<char> char_vect_iswappc;
-	Pos_Reform vr_pos_reform_;
+	Pos_Reform vr_pos_reform_;	// [NOTE]: detail content of the FILE.
+
 	//string vr_type_reform_itemquery_data_iswappc;
-	vector<BEGIN_END> begin_end_vr;
+	vector<BEGIN_END> begin_end_vr;	// [NOTE]: begin, end position in <char vector>.
 	vector<BEGIN_END> begin_end_label;
 	vector<BEGIN_END> begin_end_type;
 	vector<BEGIN_END> begin_end_reform;
@@ -278,21 +277,26 @@ int32_t WhiteBlackList_::OutputIndexFile(
 		if(prequery != query)
 		{
 			BEGIN_END b_e(begin_vr, end_vr - 1);
-			begin_end_vr.push_back(b_e);// push the last query info.
+			begin_end_vr.push_back(b_e);// [NOTE]; record the begin and end position of the QUERY. || 记录当前字段在各自vector<char> 中的开始和结束位置；
 			BEGIN_END b_e0(begin_label, end_label - 1);
-			begin_end_label.push_back(b_e0);// push the last query info.
+			begin_end_label.push_back(b_e0);
+			
 			BEGIN_END b_e1(begin_type,end_type-1);
-			begin_end_type.push_back(b_e1);// push the last query info.
+			begin_end_type.push_back(b_e1);
+		
 			BEGIN_END b_e2(begin_reform,end_reform -  1);
-			begin_end_reform.push_back(b_e2);// push the last query info.
+			begin_end_reform.push_back(b_e2);
+
 			BEGIN_END b_e3(begin_itemquery,end_itemquery -  1);
-			begin_end_itemquery.push_back(b_e3);// push the last query info.
+			begin_end_itemquery.push_back(b_e3);
+
 			BEGIN_END b_e4(begin_data,end_data -  1);
-			begin_end_data.push_back(b_e4);// push the last query info.
+			begin_end_data.push_back(b_e4);
+
 			BEGIN_END b_e5(begin_iswappc,end_iswappc -  1);
-			begin_end_iswappc.push_back(b_e5);// push the last query info.
+			begin_end_iswappc.push_back(b_e5);
 	
-			da_key_map[prequery] = num;	// record the 
+			da_key_map[prequery] = num;	// [NOTE]: record the position of query, i.e., it is the *th case. || 记录当前query内容是词典中的第几个。
 			num++;
 			begin_vr = end_vr;
 			begin_label = end_label;
@@ -309,16 +313,15 @@ int32_t WhiteBlackList_::OutputIndexFile(
 			cerr << "[debug_sam] begin_data = " << begin_data << "\tend_data = " << end_data-1 << endl;
 			cerr << "[debug_sam] begin_iswappc = " << begin_iswappc << "\tend_iswappc = " << end_iswappc-1 << endl;
 */			
-			char_vect_querylen.push_back(prequery.length());
+			char_vect_querylen.push_back(prequery.length()); // [NOTE]: record the length of the QUERY. || 记录当前query的长度。
 		}
 
+		// 遍历query对应的结构体向量
 		for(int i = 0; i < itr->vr_pos_reform.size(); i++)
 		{
-//			cerr << "[debug_sam] i = " << i << endl;
 			vr_pos_reform_ = itr->vr_pos_reform[i];
-			//vr_type_reform_itemquery_data_iswappc = vr_pos_reform_.vr + "\t" + vr_pos_reform_.pos_type + "\t" + vr_pos_reform_.reform ;
-//			cerr << "[debug_sam] vr_type_reform : " << vr_type_reform_itemquery_data_iswappc<< endl; 
-
+			// [NOTE]: 把vr, label, pos_type, reform, itemquery, data, iswappc 等字段内容插入各自的vector<char> 中。
+			// 并记录end_* 的位置。
 			char_vect_push_(vr_pos_reform_.vr.c_str(), char_vect_vr, end_vr);
 			char_vect_push_(vr_pos_reform_.label.c_str(), char_vect_label, end_label);
 			char_vect_push_(vr_pos_reform_.pos_type.c_str(), char_vect_type, end_type);
@@ -327,7 +330,6 @@ int32_t WhiteBlackList_::OutputIndexFile(
 			char_vect_push_(vr_pos_reform_.item_query.c_str(), char_vect_itemquery, end_itemquery);
 			char_vect_push_(vr_pos_reform_.data.c_str(), char_vect_data, end_data);
 			char_vect_push_(vr_pos_reform_.iswappc.c_str(), char_vect_iswappc, end_iswappc);
-			
 		}
 		prequery = query;
 	}
@@ -352,28 +354,29 @@ int32_t WhiteBlackList_::OutputIndexFile(
 	num++;
 	char_vect_querylen.push_back(query.length());
 	
-// test
-//cerr << "[debug_sam] yanzheng .................." << endl;
-for(int i = 0; i < begin_end_vr.size(); i++)
-{
-/*	cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
-	cerr << "[debug_sam] begin_type = " << begin_end_type[i].begin << "\tend_type = " <<begin_end_type[i].end << endl; 
-	cerr << "[debug_sam] begin_reform = " << begin_end_reform[i].begin << "\tend_reform = " <<begin_end_reform[i].end << endl; 
-*/
-	/*cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
-	cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
-	cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
+	// test
+//	//cerr << "[debug_sam] yanzheng .................." << endl;
+//	for(int i = 0; i < begin_end_vr.size(); i++)
+//	{
+//	/*	cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
+//		cerr << "[debug_sam] begin_type = " << begin_end_type[i].begin << "\tend_type = " <<begin_end_type[i].end << endl; 
+//		cerr << "[debug_sam] begin_reform = " << begin_end_reform[i].begin << "\tend_reform = " <<begin_end_reform[i].end << endl; 
+//	*/
+//		/*cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
+//		cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
+//		cerr << "[debug_sam] begin_vr = " << begin_end_vr[i].begin << "\tend_vr = " <<begin_end_vr[i].end << endl; 
+//	
+//		*/
+//	}
 
-	*/
-}
-	// 构建双数组
+	// [NOTE]: 构建双数组
 	for(map<string, uint32_t>::iterator itr = da_key_map.begin(); itr != da_key_map.end(); ++itr) 
 	{
-		da_key_vect.push_back(itr->first.c_str());			// query 为 key
-		da_value_vect.push_back(itr->second);				// position i, 指向begin，end
+		da_key_vect.push_back(itr->first.c_str());			// [NOTE]: query 为 key
+		da_value_vect.push_back(itr->second);				// [NOTE]: position i, 指向begin，end
 	}
 
-	if(white_black_da.build(da_key_vect.size(),				// white_black_da 为事先声明的全局DA 变量
+	if(white_black_da.build(da_key_vect.size(),				// [NOTE]: white_black_da 为事先声明的全局DA 变量
 				&da_key_vect[0], 0, 
 				&da_value_vect[0]) != 0)
 	{
@@ -382,8 +385,8 @@ for(int i = 0; i < begin_end_vr.size(); i++)
 	}
 
 	//************************************************** 写输出文件 *************************/
-//	cerr << "[debug_sam] Begin to write index file in Index_da.cpp !" << endl;
-	FILE * fp_index = fopen(index_file, "wb");
+	//	cerr << "[debug_sam] Begin to write index file in Index_da.cpp !" << endl;
+	FILE * fp_index = fopen(index_file, "wb");// 二进制写入
 	if (NULL == fp_index) 
 	{
 		fprintf(stderr, "Can not open file [%s]!\n", index_file);
@@ -394,25 +397,22 @@ for(int i = 0; i < begin_end_vr.size(); i++)
 	uint32_t index_file_size = 0;
 	fwrite(&index_file_size, 
 			sizeof(index_file_size), 1, fp_index);			// 首先：
-										// 写入1个 index_file_size 数据，其实是整个索引文件的起始位置；
-//	cerr << "[debug_sam] index_file_size : " << index_file_size << endl; // sam
-
+										// [NOTE]: 写入1个 index_file_size 数据，其实是整个索引文件的起始位置；
 	// ***********************************		写入da size
 	uint32_t da_size =
 		white_black_da.size() * white_black_da.unit_size();
-	fwrite(&da_size, sizeof(da_size), 1, fp_index);				// 写入1个 da_size 的长度 
-
-//	cerr << "[debug_sam] da_size : " << da_size << endl; // sam
+	fwrite(&da_size, sizeof(da_size), 1, fp_index);				// [NOTE]: 写入1个 da_size 的长度 
+	// cerr << "[debug_sam] da_size : " << da_size << endl; // sam
     // ***********************************		写入 da
 	fclose(fp_index);
 
-	if (white_black_da.save(index_file, "ab") != 0) 			// 将white_black_da 内容写入 index_file
+	if (white_black_da.save(index_file, "ab") != 0) 			// [NOTE]:  将white_black_da 内容写入 index_file
 	{
 		fprintf(stderr, "save index error!\n");
 		return -1;
 	}
 
-	//************************************		 写入begin, end 
+	//************************************		 [NOTE]: 写入begin, end : vr, label,  pos_type, reform, data, itemquery, iswappc
 	fp_index = fopen(index_file, "ab");
 	// begin_end_vr
 	begin_end_len = begin_end_vr.size();
@@ -459,7 +459,7 @@ for(int i = 0; i < begin_end_vr.size(); i++)
 	fwrite(&(begin_end_iswappc[0]), sizeof(BEGIN_END), 				// 写入 begin_end.size() 个 begin_end 数据
 			begin_end_iswappc.size(), fp_index);
 
-	//************************************		 写入char buf
+	//************************************		 [NOTE]: 写入char buf : vr, label, pos_type, reform, data, itemquery, iswappc
 	// vr	
 	m_len_char = char_vect_vr.size();
 	cerr << "[debug_sam] m_len_char_vr : " << m_len_char << endl; // sam
@@ -502,8 +502,8 @@ for(int i = 0; i < begin_end_vr.size(); i++)
 	fwrite(&m_len_char, sizeof(m_len_char), 1, fp_index);
 	fwrite(&(char_vect_iswappc[0]), sizeof(char_vect_iswappc[0]), 				// 写入 char_vect.size() 个 char_vect元素
 			m_len_char, fp_index);
-	
-	// querylen
+
+	//************************************		 [NOTE]: 写入 querylen
 	m_len_char = char_vect_querylen.size();
 	cerr << "[debug_sam] char_vect_querylen = " << m_len_char << endl;
 	fwrite(&m_len_char, sizeof(m_len_char), 1, fp_index);
@@ -511,7 +511,7 @@ for(int i = 0; i < begin_end_vr.size(); i++)
 			m_len_char, fp_index);
 	
 
-	// 写入文件总长度
+	// [NOTE]: 写入文件总长度
 	fflush(fp_index);
 	fclose(fp_index);
 	
