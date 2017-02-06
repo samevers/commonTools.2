@@ -95,12 +95,12 @@ bool sortFunc(const std::pair<unsigned, int>& iter1, const std::pair<unsigned, i
 
 int main(int argc, char ** argv)
 {
-	string filename = argv[1];
 	if(argc < 2)
 	{
 		_ERROR("Please input a filename!\n");
 		return -1;
 	}
+	string filename = argv[1];
 
 	loadPunctuations();
 	loadScoreMap(filename, novel_author);
