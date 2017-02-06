@@ -1,6 +1,7 @@
 #ifndef URL_ENCODE_AND_DECODE_H_
 #define URL_ENCODE_AND_DECODE_H_
 #include <string>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 using std::string;
