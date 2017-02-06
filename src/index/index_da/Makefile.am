@@ -18,3 +18,19 @@ bin_PROGRAMS+=preProcessCor_bin
 preProcessCor_bin_SOURCES=FormatDlgCor.cpp
 preProcessCor_bin_LDADD= -lpthread -lssplatform -lencoding -L../../segment -lSegment
 
+lib_LTLIBRARIES+=libContainSearch.la
+libContainSearch_la_SOURCES=ContainSearch.cpp
+libContainSearch_la_LIBADD=-lm -lpthread -lssplatform -lencoding -ldicmap -lCoreSegmentor -L../../segment -lSegment
+
+bin_PROGRAMS+=containSearchTest
+containSearchTest_SOURCES=ContainSearchTest.cpp
+containSearchTest_LDADD= -lpthread -lssplatform -lencoding -L../../segment -lSegment -lContainSearch
+
+lib_LTLIBRARIES+=libCommonPrefixSearch.la
+libCommonPrefixSearch_la_SOURCES=CommonPrefixSearch.cpp
+libCommonPrefixSearch_la_LIBADD=-lm -lpthread -lssplatform -lencoding -ldicmap -lCoreSegmentor -L../../segment -lSegment
+
+bin_PROGRAMS+=commonPrefixSearchTest
+commonPrefixSearchTest_SOURCES=CommonPrefixSearchTest.cpp
+commonPrefixSearchTest_LDADD= -lpthread -lssplatform -lencoding -L../../segment -lSegment -lCommonPrefixSearch
+
