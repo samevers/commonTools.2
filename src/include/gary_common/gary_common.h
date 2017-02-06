@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <dirent.h>  
+#include <sys/time.h>
 #include "../service_log.hpp"
 namespace spaceGary
 {
@@ -152,6 +153,17 @@ int allFiles(std::string& PATH, std::vector<std::string>& files)
     closedir(dir);  
     return 0;  
 }  
+// time Operation
+// Ê±¼ä
+int getTimeDiff(timeval end, timeval start) {
+    return (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
+}
+
+bool getTimeNow(struct timeval* tvl, struct timezone* tmp) {
+    gettimeofday(tvl, tmp);
+    return 0;
+}
+
 
 }; //end space
 

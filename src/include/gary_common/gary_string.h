@@ -88,6 +88,59 @@ bool SegSplit(std::string strItem, std::vector<std::string> &vectRes, const char
 	return true;
 };
 
+// gbk ±àÂë
+// ×Ö·û´®·´×ª
+int reverse_gbk(const string& src, string& dst) {
+	dst = "";
+	dst.resize(src.length());
+	if (dst.length() != src.length() || dst.length()&1) {
+		dst = "";
+		return -1;
+	}
+	unsigned short* psrc = (unsigned short*)src.c_str();
+	unsigned short* pdst = (unsigned short*)&dst[src.length()-2];
+	for (size_t i = dst.length()>>1; i; --i) {
+		*pdst-- = *psrc++;
+	}
+	return 0;
+}
+
+int gbkChSub(const std::string& src, std::string& dst, std::map<std::string, std::string>& chMap) {  //Ë«×Ö½Ú×Ö·ûÌæ»»
+	if (src.size() % 2 != 0) return -1;  //·ÇË«×Ö½Ú
+	dst = "";
+	for (std::string::size_type i = 0; i < src.size(); i += 2) {
+		std::map<std::string, std::string>::iterator it = chMap.find(src.substr(i, 2));
+		if (it == chMap.end()) {
+			dst += src.substr(i, 2);
+		} else {
+			dst += it->second;
+		}
+	}
+	return 0;
+}
+
+//È¥³ýÍ·Î²È«°ë½Ç¿Õ¸ñ
+bool trim(string& query) {
+    while (query.size() > 0) {
+	    if (query.size() >= 2 && query.substr(0, 2) == "¡¡") {
+			query.erase(0, 2);
+	    } 
+	    else if (query.size() >= 1 && query.substr(0, 1) == " ") {
+			query.erase(0, 1);
+	    }
+	    else if (query.size() >= 2 && query.substr(query.size() - 2, 2) == "¡¡") {
+			query.erase(query.size() - 2, 2);
+	    }
+	    else if (query.size() >= 1 && query.substr(query.size() - 1, 1) == " ") {
+			query.erase(query.size() - 1, 1);
+	    }
+	    else {
+			break;
+	    }
+    }
+    return true;
+}
+
 //trim
 inline
 bool StringTrim(std::string &strItem) {
