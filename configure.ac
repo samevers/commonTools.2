@@ -119,6 +119,7 @@ AC_CONFIG_FILES([
 	src/segment/Makefile
 	src/locate_getresult/Makefile
 	src/index/index_da/Makefile
+	src/index/index_da/commonPrefixSearch/Makefile
 	src/index/inv_index/Makefile
 	src/index/data_make/Makefile
 	src/index/ahoCorasick/Makefile
@@ -128,15 +129,13 @@ AC_CONFIG_FILES([
 	src/doc_search/Makefile
 	src/cluster/kmeans/Makefile
 	src/Porn/Predict/Makefile
-	src/include/opencore-amr/Makefile
+	src/mfccDtw/Makefile
+	src/speechProcessing/Makefile
 	src/http_client/Makefile
 	src/http_server/Makefile
-	src/speechProcessing/Makefile
-	src/service/commonTalk/Makefile
-	src/service/VerticalSearch/Makefile
-	src/service/knowledge/Makefile
 	src/test/Makefile
 
 ]) AC_OUTPUT
 AK_PATCH_LIBTOOL
+#src/sug/Makefile
 
